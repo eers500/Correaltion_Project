@@ -2,16 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70cf2554-a60d-429b-adb7-8f631699584b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/correlation_interactive.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/eers500.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Matlab/1[92,33].png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Matlab/Input_Image_[92,33].png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/R.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/Correaltion_Project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Correaltion_Project.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Matlab/Binary_Input.png" beforeDir="false" afterPath="$PROJECT_DIR$/Matlab/Binary_Input.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correlation.py" beforeDir="false" afterPath="$PROJECT_DIR$/correlation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/correlation_interactive.py" beforeDir="false" afterPath="$PROJECT_DIR$/correlation_interactive.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/image.html" beforeDir="false" afterPath="$PROJECT_DIR$/image.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
-    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_CONFLICTS" value="false" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
@@ -26,12 +31,16 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1OVfJKWLXjL6WCrjdLfcwbFZfWK" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Holography-Code/Code" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.ChangelistConflict" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -126,5 +135,22 @@
         </entry>
       </map>
     </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>

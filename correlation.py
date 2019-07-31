@@ -1,5 +1,5 @@
 #%%
-import math as m
+# import math as m
 import time
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -9,54 +9,37 @@ from scipy import ndimage
 from progress.bar import Bar
 
 #%%
-I = mpimg.imread('MF1_30Hz_200us_awaysection.png')
+INPUT = mpimg.imread('MF1_30Hz_200us_awaysection.png')
 IB = mpimg.imread('AVG_MF1_30Hz_200us_awaysection.png')
-I_FILT = mpimg.imread('MF1_1.png')
-IN = I/IB
+IFILT = mpimg.imread('MF1_1.png')
+# IFILT = IFILT[:, :, 0]
+I = INPUT/IB
 
-CORR = ndimage.correlate(IN, I_FILT, mode='wrap')
+# CORR = ndimage.correlate(IN, I_FILT, mode='wrap')
 #%%
-IFT = np.fft.fft2(IN)
-IFTS = np.fft.fftshift(IFT)
+FT  =  lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
+IFT =  lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
 
-NPAD = np.uint8((len(IN)-len(I_FILT))/2)
-IFILT = np.pad(I_FILT, ((NPAD, NPAD), (NPAD, NPAD)), 'constant')
-IBFT = np.fft.fft2(IFILT)
-IBFTS = np.fft.fftshift(IBFT)
+SI = np.shape(I)
+S = np.shape(IFILT)
+NY1 = int(np.floor((SI[0]-S[0])/2))
+NX1 = int(np.floor((SI[0]-S[1])/2))
+IPAD = np.pad(IFILT, ((NX1, NX1), (NY1, NY1)), 'constant', constant_values=0)
 
-R = IFT*np.conj(IBFT)
-r = np.real(np.fft.ifftshift(np.fft.ifft2(R)))
+I_FT = FT(I)
+IFILT_FT = IFT(IPAD)
 
-#%%
-# Bokeh plot
-# from bokeh.plotting import figure, show, output_file
-#
-# p = figure(tooltips=[("x", "$x"), ("y", "$y"), ("value", "@image")])
-# # p.x_range.range_padding = p.y_range.range_padding = 0
-#
-# # must give a vector of image data for image parameter
-# im = r
-# p.image(image=[im[::-1]], x=0, y=0, dw=512, dh=512, palette="Spectral11")
-#
-# output_file("image.html", title="image.py example")
-#
-# show(p)  # open a browser
+R = I_FT*np.conj(IFILT_FT)
+r = np.real(IFT(R))
 
 #%%
 # Pyplot plot
 plt.figure(1)
-plt.imshow(CORR, cmap='gray')
+plt.imshow(r, cmap='gray')
 plt.colorbar()
 mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'),
                          formatter='x, y = {i}, {j}\nz = {z:.06g}'.format)
 plt.show()
-
-#%%
-# Seaborn plot
-# import seaborn as sns
-#
-# plt.figure(2)
-# sns.heatmap(r, cmap='gray')
 
 #%%
 # # 3D surace Plot

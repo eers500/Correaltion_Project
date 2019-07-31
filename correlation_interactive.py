@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
 
-IM = cv2.imread('MF1_30Hz_200us_awaysection.png')
+IM = cv2.imread('R.png')
 IM = IM[:, :, 0]
 
 r = cv2.selectROI('IM', IM, False, False)
@@ -19,16 +19,16 @@ IFILT[0:nx, 0:ny] = IMCROP
 
 #%%
 # IFT = np.fft.fft2(IN)
-IFTS = np.fft.fftshift(np.fft.fft2(IM))
+IFTS = np.fft.fft2(np.fft.fftshift(IM))
 
 # IBFT = np.fft.fft2(IFILT)
-IBFTS = np.fft.fftshift(np.fft.fft2(IFILT))
+IBFTS = np.fft.fft2(np.fft.fftshift(IFILT))
 
 corr = IFTS*np.conj(IBFTS)
-CORR = np.real(np.fft.ifftshift(np.fft.ifft2(corr)))
+CORR = np.real(np.fft.ifft2(np.fft.fftshift(corr)))
 
 #%%
-# CORR = ndimage.correlate(IM, IMCROP, mode='wrap')
+# CORR = ndimage.correlate(IM, IMCROP, mode='reflect')
 
 #%%
 plt.imshow(np.abs(CORR), cmap='gray')
