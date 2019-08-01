@@ -1,34 +1,66 @@
-#%%
+# %%
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import functions as f
 from scipy import ndimage
 
 IM = cv2.imread('R.png')
 IM = IM[:, :, 0]
 
 r = cv2.selectROI('IM', IM, False, False)
-IMCROP = IM[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
-# cv2.imshow('Image', imCrop)
+IFILT = IM[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
 
-IFILT = np.zeros_like(IM)
-# A = np.pad(imCrop, 2, 'constant', constant_values=0)
-nx = np.shape(IMCROP)[0]
-ny = np.shape(IMCROP)[1]
-IFILT[0:nx, 0:ny] = IMCROP
+# %%
+# Correlation in Fourier space
+FT = lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
+IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
 
-#%%
-# IFT = np.fft.fft2(IN)
-IFTS = np.fft.fft2(np.fft.fftshift(IM))
+SI = np.shape(IM)
+S = np.shape(IFILT)
+DSY = SI[0] - S[0]
+DSX = SI[1] - S[1]
 
-# IBFT = np.fft.fft2(IFILT)
-IBFTS = np.fft.fft2(np.fft.fftshift(IFILT))
+if DSY % 2 == 0 and DSX % 2 == 0:
+    NY = int(DSY / 2)
+    NX = int(DSX / 2)
+    IPAD = np.pad(IFILT, ((NY, NY), (NX, NX)), 'constant', constant_values=0)
+elif DSY % 2 == 1 and DSX % 2 == 1:
+    NY = int(np.floor(DSY / 2))
+    NX = int(np.floor(DSX / 2))
+    IPAD = np.pad(IFILT, ((NY, NY + 1), (NX, NX + 1)), 'constant', constant_values=0)
+elif DSY % 2 == 0 and DSX % 2 == 1:
+    NY = int(DSY / 2)
+    NX = int(np.floor(DSX / 2))
+    IPAD = np.pad(IFILT, ((NY, NY), (NX, NX + 1)), 'constant', constant_values=0)
+elif DSY % 2 == 1 and DSX % 2 == 0:
+    NY = int(np.floor(DSY / 2))
+    NX = int(DSX / 2)
+    IPAD = np.pad(IFILT, ((NY, NY + 1), (NX, NX)), 'constant', constant_values=0)
 
-corr = IFTS*np.conj(IBFTS)
-CORR = np.real(np.fft.ifft2(np.fft.fftshift(corr)))
+I_FT = FT(IM)
+IFILT_FT = IFT(IPAD)
 
-#%%
-CORR = ndimage.correlate(IM, IMCROP, mode='reflect')
+R = I_FT * np.conj(IFILT_FT)
+r = np.real(IFT(R))
 
-#%%
-plt.imshow(np.abs(CORR), cmap='gray')
+# %%
+CORR = ndimage.correlate(IM, IFILT, mode='wrap')
+
+# %%
+# Pyplot plot
+plt.figure(1)
+plt.subplot(2, 2, 1);
+plt.imshow(IM, cmap='gray');
+plt.title('Hologram')
+plt.subplot(2, 2, 2);
+plt.imshow(IFILT, cmap='gray');
+plt.title('Mask')
+plt.subplot(2, 2, 3);
+plt.imshow(CORR, cmap='gray');
+plt.title('CORR')
+plt.subplot(2, 2, 4);
+plt.imshow(r, cmap='gray');
+plt.title('r')
+f.dataCursor()
+plt.show()

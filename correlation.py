@@ -27,17 +27,21 @@ DSY = SI[0]-S[0]
 DSX = SI[1]-S[1]
 
 if DSY % 2 == 0 and DSX % 2 == 0:
-    NY = DSY/2
-    NX = DSX/2
+    NY = int(DSY / 2)
+    NX = int(DSX / 2)
     IPAD = np.pad(IFILT, ((NY, NY), (NX, NX)), 'constant', constant_values=0)
+elif DSY % 2 == 1 and DSX % 2 == 1:
+    NY = int(np.floor(DSY / 2))
+    NX = int(np.floor(DSX / 2))
+    IPAD = np.pad(IFILT, ((NY, NY + 1), (NX, NX + 1)), 'constant', constant_values=0)
 elif DSY % 2 == 0 and DSX % 2 == 1:
-    NY = DSY/2
-    NX = np.floor(DSX/2)
-    IPAD = np.pad(IFILT, ((NY, NY), (NX, NX+1)), 'constant', constant_values=0)
+    NY = int(DSY / 2)
+    NX = int(np.floor(DSX / 2))
+    IPAD = np.pad(IFILT, ((NY, NY), (NX, NX + 1)), 'constant', constant_values=0)
 elif DSY % 2 == 1 and DSX % 2 == 0:
-    NY = int(np.floor(DSY/2))
-    NX = int(DSX/2)
-    IPAD = np.pad(IFILT, ((NY, NY+1), (NX, NX)), 'constant', constant_values=0)
+    NY = int(np.floor(DSY / 2))
+    NX = int(DSX / 2)
+    IPAD = np.pad(IFILT, ((NY, NY + 1), (NX, NX)), 'constant', constant_values=0)
 
 I_FT = FT(I)
 IFILT_FT = IFT(IPAD)
