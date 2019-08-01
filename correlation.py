@@ -9,22 +9,35 @@ from scipy import ndimage
 from progress.bar import Bar
 
 #%%
-INPUT = mpimg.imread('MF1_30Hz_200us_awaysection.png')
+INPUT = mpimg.imread('R.png')
 IB = mpimg.imread('AVG_MF1_30Hz_200us_awaysection.png')
-IFILT = mpimg.imread('MF1_1.png')
+IFILT = mpimg.imread('SampleRing.png')
 # IFILT = IFILT[:, :, 0]
-I = INPUT/IB
+I = INPUT
 
 CORR = ndimage.correlate(I, IFILT, mode='wrap')
 #%%
+# Correlation in Fourier space
 FT  =  lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
 IFT =  lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
 
 SI = np.shape(I)
 S = np.shape(IFILT)
-NY1 = int(np.floor((SI[0]-S[0])/2))
-NX1 = int(np.floor((SI[0]-S[1])/2))
-IPAD = np.pad(IFILT, ((NX1, NX1), (NY1, NY1)), 'constant', constant_values=0)
+DSY = SI[0]-S[0]
+DSX = SI[1]-S[1]
+
+if DSY % 2 == 0 and DSX % 2 == 0:
+    NY = DSY/2
+    NX = DSX/2
+    IPAD = np.pad(IFILT, ((NY, NY), (NX, NX)), 'constant', constant_values=0)
+elif DSY % 2 == 0 and DSX % 2 == 1:
+    NY = DSY/2
+    NX = np.floor(DSX/2)
+    IPAD = np.pad(IFILT, ((NY, NY), (NX, NX+1)), 'constant', constant_values=0)
+elif DSY % 2 == 1 and DSX % 2 == 0:
+    NY = int(np.floor(DSY/2))
+    NX = int(DSX/2)
+    IPAD = np.pad(IFILT, ((NY, NY+1), (NX, NX)), 'constant', constant_values=0)
 
 I_FT = FT(I)
 IFILT_FT = IFT(IPAD)
@@ -35,14 +48,10 @@ r = np.real(IFT(R))
 #%%
 # Pyplot plot
 plt.figure(1)
-plt.subplot(2, 2, 1)
-plt.imshow(I, cmap='gray')
-plt.subplot(2, 2, 2)
-plt.imshow(IPAD, cmap='gray')
-plt.subplot(2, 2, 3)
-plt.imshow(np.angle(IFILT_FT), cmap='gray')
-plt.subplot(2, 2, 4)
-plt.imshow(CORR, cmap='gray')
+plt.subplot(2, 2, 1);  plt.imshow(I, cmap='gray'); plt.title('Hologram')
+plt.subplot(2, 2, 2); plt.imshow(IFILT, cmap='gray'); plt.title('Mask')
+plt.subplot(2, 2, 3);  plt.imshow(CORR, cmap='gray'); plt.title('CORR')
+plt.subplot(2, 2, 4); plt.imshow(r, cmap='gray'); plt.title('r')
 f.dataCursor()
 plt.show()
 

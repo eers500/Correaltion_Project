@@ -28,7 +28,7 @@ corr = IFTS*np.conj(IBFTS)
 CORR = np.real(np.fft.ifft2(np.fft.fftshift(corr)))
 
 #%%
-# CORR = ndimage.correlate(IM, IMCROP, mode='reflect')
+CORR = ndimage.correlate(IM, IMCROP, mode='reflect')
 
 #%%
 plt.imshow(np.abs(CORR), cmap='gray')
