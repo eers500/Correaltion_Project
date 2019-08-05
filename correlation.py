@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import functions as f
 from scipy import ndimage
+from mpldatacursor import datacursor, HighlightingDataCursor
 from progress.bar import Bar
 
 #%%
@@ -56,28 +57,37 @@ plt.subplot(2, 2, 1);  plt.imshow(I, cmap='gray'); plt.title('Hologram')
 plt.subplot(2, 2, 2); plt.imshow(IFILT, cmap='gray'); plt.title('Mask')
 plt.subplot(2, 2, 3);  plt.imshow(CORR, cmap='gray'); plt.title('CORR')
 plt.subplot(2, 2, 4); plt.imshow(r, cmap='gray'); plt.title('r')
-f.dataCursor()
+# f.dataCursor2D()
+datacursor(hover=True)
 plt.show()
 
 #%%
+plt.figure()
+plt.plot(r[:, 0:9])
+datacursor(display='multiple', draggable=True)
+
+
+#%%
 # 3D surace Plot
-# from mpl_toolkits.mplot3d import Axes3D
-# from matplotlib import pyplot
-#
-# xi, yi = np.where(CORR == np.max(CORR))
-#
-# fig = pyplot.figure()
-# ax = Axes3D(fig)
-#
-# X, Y = np.meshgrid(np.arange(1, 513, 1), np.arange(1, 513, 1))
-# ax.plot_surface(X, Y, CORR)
-# ax.tick_params(axis='both', labelsize=10)
-# ax.set_title('Cells Positions in 3D', fontsize='20')
-# ax.set_xlabel('x (pixels)', fontsize='18')
-# ax.set_ylabel('y (pixels)', fontsize='18')
-# ax.set_zlabel('z (slices)', fontsize='18')
-#
-# # MAX = np.mean(CORR)*np.ones_like(X)
-# # MAX[xi[0], yi[0]] = np.max(CORR)
-# # ax.plot_surface(X, Y, MAX)
-# pyplot.show()
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import pyplot
+
+xi, yi = np.where(CORR == np.max(CORR))
+
+fig = pyplot.figure()
+ax = Axes3D(fig)
+
+X, Y = np.meshgrid(np.arange(1, 1025, 1), np.arange(1, 1025, 1))
+ax.plot_surface(X, Y, r)
+ax.tick_params(axis='both', labelsize=10)
+ax.set_title('Cells Positions in 3D', fontsize='20')
+ax.set_xlabel('x (pixels)', fontsize='18')
+ax.set_ylabel('y (pixels)', fontsize='18')
+ax.set_zlabel('z (slices)', fontsize='18')
+
+# MAX = np.mean(CORR)*np.ones_like(X)
+# MAX[xi[0], yi[0]] = np.max(CORR)
+# ax.plot_surface(X, Y, MAX)
+# f.dataCursor3D()
+datacursor(hover=True)
+pyplot.show()

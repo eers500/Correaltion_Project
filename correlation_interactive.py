@@ -6,10 +6,17 @@ import functions as f
 from scipy import ndimage
 
 IM = cv2.imread('R.png')
+# IM = cv2.imread('NORM_MF1_30Hz_200us_awaysection.png')
 IM = IM[:, :, 0]
 
-r = cv2.selectROI('IM', IM, False, False)
-IFILT = IM[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
+IM_BINARY = np.zeros_like(IM)
+IM_BINARY[IM > np.mean(IM)] = 255
+
+# r = cv2.selectROI('IM', IM, False, False)
+r = cv2.selectROI('IM_BINARY', IM_BINARY, False, False)
+
+# IFILT = IM[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
+IFILT = IM_BINARY[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
 
 # %%
 # Correlation in Fourier space
@@ -45,22 +52,14 @@ R = I_FT * np.conj(IFILT_FT)
 r = np.real(IFT(R))
 
 # %%
-CORR = ndimage.correlate(IM, IFILT, mode='wrap')
+CORR = ndimage.correlate(IM, IFILT, mode='mirror')
 
 # %%
 # Pyplot plot
 plt.figure(1)
-plt.subplot(2, 2, 1);
-plt.imshow(IM, cmap='gray');
-plt.title('Hologram')
-plt.subplot(2, 2, 2);
-plt.imshow(IFILT, cmap='gray');
-plt.title('Mask')
-plt.subplot(2, 2, 3);
-plt.imshow(CORR, cmap='gray');
-plt.title('CORR')
-plt.subplot(2, 2, 4);
-plt.imshow(r, cmap='gray');
-plt.title('r')
-f.dataCursor()
+plt.subplot(2, 2, 1); plt.imshow(IM_BINARY, cmap='gray'); plt.title('Hologram')
+plt.subplot(2, 2, 2); plt.imshow(IFILT, cmap='gray'); plt.title('Mask')
+plt.subplot(2, 2, 3); plt.imshow(CORR, cmap='gray'); plt.title('CORR')
+plt.subplot(2, 2, 4); plt.imshow(r, cmap='gray'); plt.title('r')
+f.dataCursor2D()
 plt.show()

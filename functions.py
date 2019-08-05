@@ -231,11 +231,26 @@ def zGradientStack(I, I_MEDIAN, Z):
     #    exportAVI('frameStack.avi', IM, IM.shape[0], IM.shape[1], 24)
     return GS, IM
 
-
 # %%
 # Data Cursor in plots
-def dataCursor():
+def dataCursor1D():
     import mpldatacursor
     mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'),
+                             formatter='x = {i}\ny = {y:.06g}'.format)
+    return 0
+
+# %%
+# Data Cursor in 2D plots
+def dataCursor2D():
+    import mpldatacursor
+    mpldatacursor.datacursor(hover=False, bbox=dict(alpha=1, fc='w'),
+                             formatter='x, y = {i}, {j}\nz = {z:.06g}'.format)
+    return 0
+
+# %%
+# Data Cursor in 3D plots
+def dataCursor3D():
+    import mpldatacursor
+    mpldatacursor.datacursor(hover=False, bbox=dict(alpha=1, fc='w'),
                              formatter='x, y = {i}, {j}\nz = {z:.06g}'.format)
     return 0
