@@ -10,13 +10,22 @@ from mpldatacursor import datacursor, HighlightingDataCursor
 from progress.bar import Bar
 
 #%%
-INPUT = mpimg.imread('R.png')
+INPUT = mpimg.imread('R_Binary.png')
 IB = mpimg.imread('AVG_MF1_30Hz_200us_awaysection.png')
-IFILT = mpimg.imread('SampleRing.png')
+IFILT = mpimg.imread('R_ring_Binary.png')
 # IFILT = IFILT[:, :, 0]
 I = INPUT
 
-CORR = ndimage.correlate(I, IFILT, mode='wrap')
+#%%
+BINARY = False
+if BINARY == True:
+    I[I < np.mean(I)] = 0
+    I[I >= np.mean(I)] = 255
+    IFILT[IFILT < np.mean(I)] = 0
+    IFILT[IFILT >= np.mean(I)] = 255
+
+#%%
+CORR = ndimage.correlate(I, IFILT, mode='reflect')
 #%%
 # Correlation in Fourier space
 FT  =  lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
@@ -48,7 +57,7 @@ I_FT = FT(I)
 IFILT_FT = IFT(IPAD)
 
 R = I_FT*np.conj(IFILT_FT)
-r = np.real(IFT(R))
+r = np.abs(IFT(R))**2
 
 #%%
 # Pyplot plot
@@ -62,32 +71,31 @@ datacursor(hover=True)
 plt.show()
 
 #%%
-plt.figure()
-plt.plot(r[:, 0:9])
-datacursor(display='multiple', draggable=True)
-
+# plt.figure()
+# plt.plot(r[:, 0:9])
+# datacursor(display='multiple', draggable=True)
 
 #%%
-# 3D surace Plot
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import pyplot
-
-xi, yi = np.where(CORR == np.max(CORR))
-
-fig = pyplot.figure()
-ax = Axes3D(fig)
-
-X, Y = np.meshgrid(np.arange(1, 1025, 1), np.arange(1, 1025, 1))
-ax.plot_surface(X, Y, r)
-ax.tick_params(axis='both', labelsize=10)
-ax.set_title('Cells Positions in 3D', fontsize='20')
-ax.set_xlabel('x (pixels)', fontsize='18')
-ax.set_ylabel('y (pixels)', fontsize='18')
-ax.set_zlabel('z (slices)', fontsize='18')
-
-# MAX = np.mean(CORR)*np.ones_like(X)
-# MAX[xi[0], yi[0]] = np.max(CORR)
-# ax.plot_surface(X, Y, MAX)
-# f.dataCursor3D()
-datacursor(hover=True)
-pyplot.show()
+# # 3D surace Plot
+# from mpl_toolkits.mplot3d import Axes3D
+# from matplotlib import pyplot
+#
+# xi, yi = np.where(CORR == np.max(CORR))
+#
+# fig = pyplot.figure()
+# ax = Axes3D(fig)
+#
+# X, Y = np.meshgrid(np.arange(1, 1025, 1), np.arange(1, 1025, 1))
+# ax.plot_surface(X, Y, r)
+# ax.tick_params(axis='both', labelsize=10)
+# ax.set_title('Cells Positions in 3D', fontsize='20')
+# ax.set_xlabel('x (pixels)', fontsize='18')
+# ax.set_ylabel('y (pixels)', fontsize='18')
+# ax.set_zlabel('z (slices)', fontsize='18')
+#
+# # MAX = np.mean(CORR)*np.ones_like(X)
+# # MAX[xi[0], yi[0]] = np.max(CORR)
+# # ax.plot_surface(X, Y, MAX)
+# # f.dataCursor3D()
+# datacursor(hover=True)
+# pyplot.show()

@@ -243,7 +243,7 @@ def dataCursor1D():
 # Data Cursor in 2D plots
 def dataCursor2D():
     import mpldatacursor
-    mpldatacursor.datacursor(hover=False, bbox=dict(alpha=1, fc='w'),
+    mpldatacursor.datacursor(display='multiple', hover=True, bbox=dict(alpha=1, fc='w'),
                              formatter='x, y = {i}, {j}\nz = {z:.06g}'.format)
     return 0
 
