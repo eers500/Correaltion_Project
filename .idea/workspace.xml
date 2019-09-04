@@ -2,41 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70cf2554-a60d-429b-adb7-8f631699584b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/FFTHDLOptimizedExample_Burst.slxc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FFTHDLOptimizedExample_Streaming.slxc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/R_Binary.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/R_ring.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/R_ring_Binary.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_cgxe/FFTHDLOptimizedExample_Burst/FFTHDLOptimizedExample_Burst_Cache.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_cgxe/FFTHDLOptimizedExample_Streaming/FFTHDLOptimizedExample_Streaming_Cache.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_jitprj/6aDUTpjmuh8EDlsTyofnPF.l" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_jitprj/6aDUTpjmuh8EDlsTyofnPF.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_jitprj/99acNJY2b2VOHWKEB8lsbF.l" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_jitprj/99acNJY2b2VOHWKEB8lsbF.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_jitprj/jitEngineAccessInfo.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_sfprj/EMLReport/emlReportAccessInfo.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_sfprj/EMLReport/s7zW6JX9sDPttEGPTsPKRQG.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_sfprj/EMLReport/sQLYfqVKA567ZK7jVVB6hDD.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/_sfprj/EMLReport/siMUw4BT6pvSniYkOrxs2bH.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/sim/varcache/FFTHDLOptimizedExample_Burst/checksumOfCache.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/sim/varcache/FFTHDLOptimizedExample_Burst/tmwinternal/simulink_cache.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/sim/varcache/FFTHDLOptimizedExample_Burst/varInfo.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/sim/varcache/FFTHDLOptimizedExample_Streaming/checksumOfCache.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/sim/varcache/FFTHDLOptimizedExample_Streaming/tmwinternal/simulink_cache.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slprj/sim/varcache/FFTHDLOptimizedExample_Streaming/varInfo.mat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/Correaltion_Project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Correaltion_Project.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/R_Binary.png" beforeDir="false" afterPath="$PROJECT_DIR$/R_Binary.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/R_ring_Binary.png" beforeDir="false" afterPath="$PROJECT_DIR$/R_ring_Binary.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correlation.py" beforeDir="false" afterPath="$PROJECT_DIR$/correlation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correlation_interactive.py" beforeDir="false" afterPath="$PROJECT_DIR$/correlation_interactive.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matlab_correlation.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_correlation.m" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="false" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="Correaltion_Project" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -57,8 +40,8 @@
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Holography-Code/Code" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">

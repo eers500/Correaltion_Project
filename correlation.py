@@ -6,30 +6,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 import functions as f
 from scipy import ndimage
-from mpldatacursor import datacursor, HighlightingDataCursor
-from progress.bar import Bar
+from mpldatacursor import datacursor
+
+plt.set_cmap('gray')
+plt.close()
 
 #%%
-INPUT = mpimg.imread('R_Binary.png')
-IB = mpimg.imread('AVG_MF1_30Hz_200us_awaysection.png')
-IFILT = mpimg.imread('R_ring_Binary.png')
-# IFILT = IFILT[:, :, 0]
-I = INPUT
+# INPUT = mpimg.imread('R_Binary.png')
+IN = 1 - mpimg.imread('R.png')
+IFILT = 1 - mpimg.imread('R_ring_Binary.png')
+IFILT = IFILT[:, :, 0]
+I = IN
 
 #%%
-BINARY = False
+BINARY = True
 if BINARY == True:
-    I[I < np.mean(I)] = 0
-    I[I >= np.mean(I)] = 255
-    IFILT[IFILT < np.mean(I)] = 0
-    IFILT[IFILT >= np.mean(I)] = 255
+    I[I < 0.49] = 0
+    I[I >= 0.49] = 1
+    # IFILT[IFILT < np.mean(I)] = 0
+    # IFILT[IFILT >= np.mean(I)] = 255
 
 #%%
 CORR = ndimage.correlate(I, IFILT, mode='reflect')
+ix, iy = np.where(CORR == np.max(CORR))
+idx, idy = ix[0], iy[0]
 #%%
 # Correlation in Fourier space
-FT  =  lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
-IFT =  lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
+FT = lambda x: np.fft.fftshift(np.fft.fft2(x))
+IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(X))
 
 SI = np.shape(I)
 S = np.shape(IFILT)
@@ -54,26 +58,25 @@ elif DSY % 2 == 1 and DSX % 2 == 0:
     IPAD = np.pad(IFILT, ((NY, NY + 1), (NX, NX)), 'constant', constant_values=0)
 
 I_FT = FT(I)
-IFILT_FT = IFT(IPAD)
+IFILT_FT = FT(IPAD)
 
 R = I_FT*np.conj(IFILT_FT)
-r = np.abs(IFT(R))**2
+r = np.abs(IFT(R))
+
+ix2, iy2 = np.where(r == np.max(r))
+idx2, idy2 = ix2[0], iy2[0]
+
 
 #%%
 # Pyplot plot
 plt.figure(1)
-plt.subplot(2, 2, 1);  plt.imshow(I, cmap='gray'); plt.title('Hologram')
-plt.subplot(2, 2, 2); plt.imshow(IFILT, cmap='gray'); plt.title('Mask')
-plt.subplot(2, 2, 3);  plt.imshow(CORR, cmap='gray'); plt.title('CORR')
-plt.subplot(2, 2, 4); plt.imshow(r, cmap='gray'); plt.title('r')
+ax1 = plt.subplot(2, 2, 1);  plt.imshow(IN, cmap='gray'); plt.title('Hologram'); plt.scatter(idy, idx, s=150, facecolors='none', edgecolors='r')
+ax2 = plt.subplot(2, 2, 2); plt.imshow(IFILT, cmap='gray'); plt.title('Mask')
+ax3 = plt.subplot(2, 2, 3, sharex=ax1, sharey=ax1);  plt.imshow(CORR, cmap='gray'); plt.title('CORR'); plt.scatter(idy, idx, s=150, facecolors='none', edgecolors='r')
+ax4 = plt.subplot(2, 2, 4, sharex=ax1, sharey=ax1); plt.imshow(r, cmap='gray'); plt.title('r'); plt.scatter(idy2, idx2, s=150, facecolors='none', edgecolors='r')
 # f.dataCursor2D()
 datacursor(hover=True)
 plt.show()
-
-#%%
-# plt.figure()
-# plt.plot(r[:, 0:9])
-# datacursor(display='multiple', draggable=True)
 
 #%%
 # # 3D surace Plot

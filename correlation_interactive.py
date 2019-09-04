@@ -1,35 +1,43 @@
-# %%
+#%%
 import cv2
+import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import functions as f
 from scipy import ndimage
 
-IM = cv2.imread('R_Binary.png')
-IM1 = cv2.imread('R.png')
-# IM = cv2.imread('NORM_MF1_30Hz_200us_awaysection.png')
-IM = IM[:, :, 0]
-IM1 = IM1[:, :, 0]
+plt.set_cmap('gray')
+plt.close()
 
-IM_BINARY = np.zeros_like(IM1)
-IM_BINARY[IM > np.mean(IM1)] = 255
+IM = mpimg.imread('R.png')
+IM_BINARY = np.zeros_like(IM)
+IM_BINARY[IM >= 0.49] = 255
 
-# fig, (ax1, ax2) = plt.subplots(1, 2, sharex='all', sharey='all')
-# ax1.imshow(IM, cmap='gray')
-# ax2.imshow(IM_BINARY, cmap='gray')
-# f.dataCursor2D()
 #%%
-# S = cv2.selectROI('IM', IM, False, False)
-S = cv2.selectROI('IM_BINARY', IM_BINARY, False, False)
+import numpy as np
+import matplotlib.pyplot as plt
+import functions as f
 
-# IFILT = IM[int(S[1]):int(S[1] + S[3]), int(S[0]):int(S[0] + S[2])]
+x = np.linspace(-20, 20, 40)
+y = x
+X, Y = np.meshgrid(x, y)
+rho = np.sqrt(X**2 + Y**2)
+
+A = f.fraunhofer(rho, 10, 50)
+a = A + np.abs(np.min(A))
+aa = 255*(a/np.max(a))
+AA = np.zeros_like(aa)
+AA[a >= 127] = 255
+# plt.imshow(A, cmap='gray')
+
+#%%
+S = cv2.selectROI('IM_BINARY', np.uint8(IM*255), False, False)
 IFILT = IM_BINARY[int(S[1]):int(S[1] + S[3]), int(S[0]):int(S[0] + S[2])]
 
-
-# %%
+#%%
 # Correlation in Fourier space
-FT = lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
-IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
+FT = lambda x: np.fft.fftshift(np.fft.fft2(x))
+IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(X))
 
 SI = np.shape(IM_BINARY)
 S = np.shape(IFILT)
@@ -55,21 +63,39 @@ elif DSY % 2 == 1 and DSX % 2 == 0:
 
 # I_FT = FT(IM)
 I_FT = FT(IM_BINARY)
-IFILT_FT = IFT(IPAD)
+IFILT_FT = FT(IPAD)
 
 R = I_FT * np.conj(IFILT_FT)
-r = np.abs(IFT(R))**2
+r = np.abs(IFT(R))
 
-# %%
-CORR = ndimage.correlate(IM_BINARY, IFILT, mode='wrap')
+ix2, iy2 = np.where(r == np.max(r))
+idx2, idy2 = ix2[0], iy2[0]
+
+#%%
+CORR = ndimage.correlate(IM_BINARY, IFILT, mode='reflect')
 # CORR = ndimage.correlate(IM, IFILT, mode='wrap')
+ix, iy = np.where(CORR == np.max(CORR))
+idx, idy = ix[0], iy[0]
 
 #%%
 # Pyplot plot
-ax1 = plt.subplot(2, 2, 1);  plt.imshow(IM_BINARY, cmap='gray'); plt.title('Hologram')
+ax1 = plt.subplot(2, 2, 1);  plt.imshow(IM, cmap='gray'); plt.title('Hologram'); plt.scatter(idy, idx, s=150, facecolors='none', edgecolors='r')
 ax2 = plt.subplot(2, 2, 2); plt.imshow(IFILT, cmap='gray'); plt.title('Mask')
-ax3 = plt.subplot(2, 2, 3, sharex=ax1, sharey=ax1);  plt.imshow(CORR, cmap='gray'); plt.title('CORR')
-ax4 = plt.subplot(2, 2, 4, sharex=ax1, sharey=ax1); plt.imshow(r, cmap='gray'); plt.title('r')
+ax3 = plt.subplot(2, 2, 3, sharex=ax1, sharey=ax1);  plt.imshow(CORR, cmap='gray'); plt.title('CORR'); plt.scatter(idy, idx, s=150, facecolors='none', edgecolors='r')
+ax4 = plt.subplot(2, 2, 4, sharex=ax1, sharey=ax1); plt.imshow(r, cmap='gray'); plt.title('r'); plt.scatter(idy2, idx2, s=150, facecolors='none', edgecolors='r')
 f.dataCursor2D()
 plt.show()
 
+#%%
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import functions as f
+#
+# x = np.linspace(-20, 20, 40)
+# y = x
+# X, Y = np.meshgrid(x, y)
+# rho = np.sqrt(X**2 + Y**2)
+#
+# A = f.fraunhofer(rho, 10, 50)
+#
+# plt.imshow(A, cmap='gray')
