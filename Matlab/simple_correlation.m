@@ -127,7 +127,8 @@ title('Standard Product Method');
 
 Filter = -255.*angle(Phase_Reference);
 
-
+figure(4)
+imagesc(Filter); colormap gray
 % Save images.
 % Save binary input, target filter image
 % and binary input image showing the chosen bacteria.

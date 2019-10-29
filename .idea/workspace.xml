@@ -2,15 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70cf2554-a60d-429b-adb7-8f631699584b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Correaltion_Project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Correaltion_Project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Matlab/Input_Image_[582,264].png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Matlab/R-filt[582,264].png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/R_Binary.png" beforeDir="false" afterPath="$PROJECT_DIR$/R_Binary.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/R_ring_Binary.png" beforeDir="false" afterPath="$PROJECT_DIR$/R_ring_Binary.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/correlation.py" beforeDir="false" afterPath="$PROJECT_DIR$/correlation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/correlation_interactive.py" beforeDir="false" afterPath="$PROJECT_DIR$/correlation_interactive.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Matlab/Binary_Input.png" beforeDir="false" afterPath="$PROJECT_DIR$/Matlab/Binary_Input.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Matlab/simple_correlation.m" beforeDir="false" afterPath="$PROJECT_DIR$/Matlab/simple_correlation.m" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
