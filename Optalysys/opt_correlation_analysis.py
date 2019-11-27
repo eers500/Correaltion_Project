@@ -23,7 +23,7 @@ filter_image_number = scipy.io.loadmat('filter_image_number.mat')
 _,_,_,filter_image_number=filter_image_number.values()
 
 #%%
-PKS = peak_local_max(camera_photo[:,:,0], min_distance=3, threshold_abs=15)
+PKS = peak_local_max(camera_photo[:, :, 0], min_distance=3, threshold_abs=15)
 
 plt.imshow(camera_photo[:, :, 0])
 plt.scatter(PKS[:, 1], PKS[:, 0], marker='o', facecolors='none', s=80, edgecolors='r')
