@@ -1,0 +1,48 @@
+imgs = imread('Input_Bacteria.png');
+
+figure(1)
+imagesc(imgs); colormap gray;
+h = floor(getrect);
+
+
+selection = imgs(h(2):h(2)+h(4), h(1):h(1)+h(3));
+
+%%
+sel_ft = fftshift(fft2(selection));
+
+
+%%
+FT = @(x) fftshift(fft2(x));
+IFT = @(X) ifftshift(ifft2(X));
+
+SI = size(imgs);
+S = size(selection);
+
+PAD = zeros(size(imgs));
+PAD(1:S(1), 1:S(2)) = selection;
+PAD = circshift(PAD, [SI(1)/2-S(1)/2, SI(2)/2-S(2)/2]);
+% imagesc(PAD)
+
+%%
+FT_IMG = FT(imgs);
+FT_PAD = FT(PAD);
+
+R = FT_IMG.*conj(FT_PAD);
+CORR = abs(R);
+
+figure(2)
+subplot(2, 2, 1)
+imagesc(imgs); axis square
+
+subplot(2,2,2)
+imagesc(selection); axis square
+
+subplot(2,2,3)
+imagesc(CORR); axis square
+
+subplot(2,2,4)
+mesh(CORR); axis square
+
+
+
+
