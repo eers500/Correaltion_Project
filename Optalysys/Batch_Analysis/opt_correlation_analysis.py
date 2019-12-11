@@ -15,6 +15,7 @@ from skimage.feature import peak_local_max
 
 #%%
 camera_photo = scipy.io.loadmat('camera_photo.mat')
+
 _, _, _,camera_photo = camera_photo.values()
 
 input_image_number = scipy.io.loadmat('input_image_number.mat')
