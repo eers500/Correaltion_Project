@@ -17,6 +17,9 @@ from skimage.feature import peak_local_max
 CAMERA_PHOTO = scipy.io.loadmat('camera_photo.mat')
 _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
 
+FILTERS = scipy.io.loadmat('filters.mat')
+_, _, _, FILTERS = FILTERS.values()
+
 INPUT_IMAGE_NUMBER = scipy.io.loadmat('input_image_number.mat')
 _, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values()
 
@@ -40,7 +43,7 @@ FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 # import plotly.graph_objects as go
 # from plotly.offline import plot
 #
-# fig = go.Figure(data=[go.Surface(z=camera_photo[:, :, 1])])
+# fig = go.Figure(data=[go.Surface(z=CAMERA_PHOTO[:, :, 1])])
 # fig.update_traces(contours_z=dict(show=True, usecolormap=True,
 #                                  highlightcolor="limegreen", project_z=True))
 # fig.update_layout(title='correlation')
@@ -59,13 +62,17 @@ FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 # Y = np.arange(1644)
 # X, Y = np.meshgrid(Y, X)
 #
-# ax.plot_surface(X, Y, camera_photo[:, :, 0])
+# ax.plot_surface(X, Y, CAMERA_PHOTO[:, :, 0])
 # ax.tick_params(axis='both', labelsize=10)
 # ax.set_title('Cells Positions in 3D', fontsize='20')
 # ax.set_xlabel('x (pixels)', fontsize='18')
 # ax.set_ylabel('y (pixels)', fontsize='18')
 # ax.set_zlabel('z (slices)', fontsize='18')
 # pyplot.show()
+
+#%%
+for j in range(np.shape(CAMERA_PHOTO)[2]):
+    CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.abs(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]]))*1)
 
 #%%
 # For the first image (#1), we want to compare the correlation with all the filters
@@ -83,6 +90,7 @@ for k in range(len(np.unique(INPUT_IMAGE_NUMBER))):
 
     for i in range(len(ID_IM)):
         # MAX.append(np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
+        # CAM_PHOTO_NORM = CAMERA_PHOTO[:, :, ID_IM[i]]
         MAX = np.append(MAX, np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
         # np.where()
 
