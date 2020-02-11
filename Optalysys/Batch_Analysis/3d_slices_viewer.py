@@ -4,6 +4,8 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 
+# from opt_correlation_analysis import CAMERA_PHOTOS
+
 
 class IndexTracker(object):
     def __init__(self, ax, X):
@@ -35,7 +37,10 @@ fig, ax = plt.subplots(1, 1)
 
 #gr =grad
 #gr[gr<1]=0
-X = FILTERS
+
+a = 21 
+#X = CORR[:, :, 0+a:21+a]
+X = CORR
 
 tracker = IndexTracker(ax, X)
 

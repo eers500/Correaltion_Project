@@ -71,8 +71,48 @@ FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 # pyplot.show()
 
 #%%
-for j in range(np.shape(CAMERA_PHOTO)[2]):
-    CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.abs(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]]))*1)
+# for j in range(np.shape(CAMERA_PHOTO)[2]):
+#     CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.real(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]-1]))*np.sum(np.abs(CAMERA_PHOTO[:, :, j])))
+
+#%%
+# Normalization to compare images
+SUM_FILTS = np.empty(np.shape(CAMERA_PHOTO)[2])
+SUM_CAM = np.empty_like(SUM_FILTS)
+MULT = np.empty_like(SUM_FILTS)
+CAMERA_PHOTOS = np.empty_like(CAMERA_PHOTO)
+
+# FILTERS[FILTERS <= 0] = 0
+# FILTERS[FILTERS > 0] = 255
+
+
+# for i in range(np.shape(CAMERA_PHOTO)[2]):
+#     # SUM_FILTS[i] = np.sum(np.real(FILTERS[:, :, FILTER_IMAGE_NUMBER[i]-1]))
+#     SUM_CAM[i] = np.sum(np.real(CAMERA_PHOTO[:, :, i]))
+#     # MULT[i] = SUM_FILTS[i] + SUM_CAM[i]
+#     # CAMERA_PHOTOS[:, :, i] = CAMERA_PHOTO[:, :, i] / MULT[i]
+#     CAMERA_PHOTOS[:, :, i] = CAMERA_PHOTO[:, :, i]
+
+SUM_CAM = np.sum(CAMERA_PHOTO, axis=(0, 1))
+SUM_FILT = np.sum(FILTERS, axis=(0, 1))
+CAMERA_PHOTOS = CAMERA_PHOTO / (np.max(SUM_CAM) + np.max(SUM_FILT))
+CAMERA_PHOTO = CAMERA_PHOTOS
+
+# plt.figure()
+# plt.plot(SUM_FILTS)
+#
+# plt.figure()
+# plt.plot(SUM_CAM)
+#
+# plt.figure()
+# plt.plot(MULT)
+#
+# plt.figure()
+# plt.imshow(CAMERA_PHOTOS[:, :, 0])
+
+
+#%%
+# Histogram equalization and normalization
+# CAMS, cdf = f.histeq(CAMERA_PHOTO)
 
 #%%
 # For the first image (#1), we want to compare the correlation with all the filters
@@ -108,9 +148,9 @@ for k in range(len(np.unique(INPUT_IMAGE_NUMBER))):
 print(IMAGE_FILTER_PAIR)
 
 #%%
-IMAGE = 3
-ID1 = np.where(INPUT_IMAGE_NUMBER != IMAGE)
-PHOTOS_1 = np.delete(CAMERA_PHOTO, ID1, axis=-1)
+# IMAGE = 3
+# ID1 = np.where(INPUT_IMAGE_NUMBER != IMAGE)
+# PHOTOS_1 = np.delete(CAMERA_PHOTO, ID1, axis=-1)
 
 #%%
 # for i in range(len(ID_IM)):
