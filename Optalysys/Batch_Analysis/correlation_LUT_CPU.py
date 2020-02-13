@@ -34,17 +34,32 @@ VID_BINARY[VID >= np.mean(VID)] = 255
 
 CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]))
 
-for i in range(np.shape(VID)[2]):
-    for j in range(np.shape(LUT)[2]):
-        print((i, j))
-        CORR[:, :, i+j] = ndimage.filters.correlate(VID_BINARY[:, :, i], LUT_BINARY[:, :, j], mode='wrap')
+#for i in range(np.shape(VID)[2]):
+#    for j in range(np.shape(LUT)[2]):
+#        print((i, j))
+#        CORR[:, :, 21*i+j] = ndimage.filters.correlate(VID_BINARY[:, :, i], LUT_BINARY[:, :, j], mode='wrap')
+#        print(20*i + j)
+#
+#MAX = []
+#for k in range(651):
+#    MAX.append(np.max(CORR[:, :, k]))
 
-MAX = []
-for k in range(651):
-    MAX.append(np.max(CORR[:, :, k]))
+A = np.repeat(VID_BINARY, repeats=21, axis=-1)
+B = np.tile(LUT_BINARY, 31)
 
+VID_FT = np.fft.fftshift(np.fft.fft2(A))
+LUT_FT = np.fft.fftshift(np.fft.fftn(B, s=(512, 510, 651)))
+
+R = VID_FT * np.conj(LUT_FT)
+CORR = np.real(np.fft.ifftshift(np.fft.ifft2(R)))
 #%%
- plt.imshow(CORR, cmap='gray')
+AA = VID_BINARY[:, :, 0]
+BB = LUT_BINARY[:, :, 0]
+BB_FT = np.fft.fftshift(np.fft.fft2(BB))
+
+C = ndimage.filters.correlate(AA, BB)
+#%%
+ plt.imshow(B, cmap='gray')
  plt.show()
 
 #%%

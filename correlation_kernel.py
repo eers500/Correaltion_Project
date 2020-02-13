@@ -19,4 +19,4 @@ C = CORR
 C[C < np.max(C)] = 0
 
 ##
-plt.imshow(CORR, cmap='gray')
+plt.imshow(np.real(KFT), cmap='gray')
