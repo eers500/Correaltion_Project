@@ -17,12 +17,14 @@ from scipy import ndimage
 #%%
 # Import LUT form images
 # LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
-LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
+#LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
+LUT = [mpimg.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
 LUT = np.swapaxes(np.swapaxes(LUT, 0, 1), 1, 2)
-LUT = 255*(LUT / np.max(LUT))
+LUT = np.uint8(255*(LUT / np.max(LUT)))
 #%%
 # Import Video correlate
-VID = f.videoImport("E://PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
+#VID = f.videoImport("E://PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
+VID = f.videoImport("/home/erick/Documents/PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
 
 #%%
 
@@ -32,8 +34,8 @@ VID_BINARY = np.zeros(np.shape(VID))
 LUT_BINARY[LUT >= np.mean(LUT)] = 255
 VID_BINARY[VID >= np.mean(VID)] = 255
 
-CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]))
-
+#CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]))
+#
 #for i in range(np.shape(VID)[2]):
 #    for j in range(np.shape(LUT)[2]):
 #        print((i, j))
@@ -44,14 +46,23 @@ CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shap
 #for k in range(651):
 #    MAX.append(np.max(CORR[:, :, k]))
 
-A = np.repeat(VID_BINARY, repeats=21, axis=-1)
-B = np.tile(LUT_BINARY, 31)
+A = np.repeat(VID_BINARY, repeats=21, axis=-1).astype('float32')
+BB = np.tile(LUT_BINARY, 31)
+B = np.zeros_like(A)
+B[:np.shape(BB)[0], :np.shape(BB)[1], :] = BB
+del BB
+NI, NJ, _ = np.shape(B)
+Ni, Nj, _ = np.shape(LUT)
+B = np.roll(B, (int(np.floor(NI/2 - Ni/2)), int(np.floor(NJ/2 - Nj/2))), axis=(0, 1)).astype('float32')
 
-VID_FT = np.fft.fftshift(np.fft.fft2(A))
-LUT_FT = np.fft.fftshift(np.fft.fftn(B, s=(512, 510, 651)))
+A = np.fft.fftshift(np.fft.fft2(A, axes=(0, 1))).astype('complex64') # 31
+B = np.fft.ifftshift(np.fft.ifft2(B, axes=(0, 1))).astype('complex64')  #21
 
-R = VID_FT * np.conj(LUT_FT)
-CORR = np.real(np.fft.ifftshift(np.fft.ifft2(R)))
+CORR = np.abs(np.fft.ifftshift(np.fft.ifft2(A * np.conj(B))))
+
+for i in range(np.shape(CORR)[2]):
+    CORR[:, :, i] = 255 * (CORR[:, :, i] / np.max(CORR[:, :, i]))
+
 #%%
 AA = VID_BINARY[:, :, 0]
 BB = LUT_BINARY[:, :, 0]

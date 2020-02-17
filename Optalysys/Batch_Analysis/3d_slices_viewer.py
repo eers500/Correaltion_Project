@@ -16,7 +16,7 @@ class IndexTracker(object):
         rows, cols, self.slices = X.shape
         self.ind = self.slices//2
 
-        self.im = ax.imshow(self.X[:, :, self.ind])
+        self.im = ax.imshow(self.X[:, :, self.ind], cmap='gray')
         self.update()
 
     def onscroll(self, event):
