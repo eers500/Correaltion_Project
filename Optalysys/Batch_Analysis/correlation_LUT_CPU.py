@@ -52,7 +52,6 @@ for k in range(np.shape(A)[2]):
     print(k)
     CORR[:, :, k] = ndimage.filters.correlate(A[:, :, k], B[:, :, k], mode='wrap')
 
-
 #CORR = np.abs(np.fft.ifftshift(np.fft.ifft2(A * np.conj(B))))
 
 C = np.empty_like(CORR)
@@ -62,48 +61,44 @@ for i in range(np.shape(CORR)[2]):
 MAX = []
 for k in range(651):
     MAX.append(np.max(CORR[:, :, k]))
-#%%
-LUT_BINARY = np.zeros(np.shape(LUT), dtype='uint8')
-VID_BINARY = np.zeros(np.shape(VID), dtype='uint8')
-
-LUT_BINARY[LUT >= np.mean(LUT)] = 255
-VID_BINARY[VID >= np.mean(VID)] = 255
-
-BC = np.zeros((512, 510, 21))
-BC[:np.shape(LUT_BINARY)[0], :np.shape(LUT_BINARY)[1], :] = LUT_BINARY
-LUT_BINARY = BC
-del BC
-NI, NJ, _ = np.shape(LUT_BINARY)
-Ni, Nj, _ = np.shape(LUT)
-LUT_BINARY = np.roll(LUT_BINARY, (int(np.floor(NI/2 - Ni/2)), int(np.floor(NJ/2 - Nj/2))), axis=(0, 1))
-
-FT_VID = np.empty_like(VID_BINARY, dtype='complex64')
-FT_LUT = np.empty_like(LUT_BINARY, dtype='complex64')
-
-for k in range(np.shape(VID_BINARY)[2]):
-    FT_VID[:, :, k] = np.fft.fftshift(np.fft.fft2(VID_BINARY[:, :, k]))
     
-for k in range(np.shape(LUT_BINARY)[2]):
-    FT_LUT[:, :, k] = np.fft.fftshift(np.fft.fft2(LUT_BINARY[:, :, k]))
-
-A = np.repeat(FT_VID, repeats=21, axis=-1)
-B = np.tile(FT_LUT, 31)
-
-CORR = np.real(A*np.conj(B))
-CORR = CORR / (np.sum(VID_BINARY**2)*np.sum(LUT_BINARY**2))
-
-
-
+MAX_FILT = np.empty(31) 
+for i in range(31):
+    M = MAX[i*21:i*21+21]
+    M = np.array(M)
+    MAX_FILT[i] = np.where(np.max(M) == M)[0][0]
+    
+        
 
 #%%
-AA = VID_BINARY[:, :, 0]
-BB = LUT_BINARY[:, :, 0]
-BB_FT = np.fft.fftshift(np.fft.fft2(BB))
+# LUT_BINARY = np.zeros(np.shape(LUT), dtype='uint8')
+# VID_BINARY = np.zeros(np.shape(VID), dtype='uint8')
 
-C = ndimage.filters.correlate(AA, BB)
-#%%
-plt.imshow(B, cmap='gray')
-plt.show()
+# LUT_BINARY[LUT >= np.mean(LUT)] = 255
+# VID_BINARY[VID >= np.mean(VID)] = 255
+
+# BC = np.zeros((512, 510, 21))
+# BC[:np.shape(LUT_BINARY)[0], :np.shape(LUT_BINARY)[1], :] = LUT_BINARY
+# LUT_BINARY = BC
+# del BC
+# NI, NJ, _ = np.shape(LUT_BINARY)
+# Ni, Nj, _ = np.shape(LUT)
+# LUT_BINARY = np.roll(LUT_BINARY, (int(np.floor(NI/2 - Ni/2)), int(np.floor(NJ/2 - Nj/2))), axis=(0, 1))
+
+# FT_VID = np.empty_like(VID_BINARY, dtype='complex64')
+# FT_LUT = np.empty_like(LUT_BINARY, dtype='complex64')
+
+# for k in range(np.shape(VID_BINARY)[2]):
+#     FT_VID[:, :, k] = np.fft.fftshift(np.fft.fft2(VID_BINARY[:, :, k]))
+    
+# for k in range(np.shape(LUT_BINARY)[2]):
+#     FT_LUT[:, :, k] = np.fft.fftshift(np.fft.fft2(LUT_BINARY[:, :, k]))
+
+# A = np.repeat(FT_VID, repeats=21, axis=-1)
+# B = np.tile(FT_LUT, 31)
+
+# CORR = np.real(A*np.conj(B))
+# CORR = CORR / (np.sum(VID_BINARY**2)*np.sum(LUT_BINARY**2))
 
 #%%
 # plt.subplot(1,2,1)
@@ -122,14 +117,3 @@ plt.show()
 #                                  highlightcolor="limegreen", project_z=True))
 #fig.show()
 #plot(fig)
-
-#%%
-
-LAMBDA = 640E-9
-f = 0.05
-RN = np.empty(10)
-for n in range(10):
-    RN[n] = np.sqrt(n*LAMBDA*f+0.25*n**2*LAMBDA**2)
-
-plt.plot(RN, 'o')
-plt.show()
