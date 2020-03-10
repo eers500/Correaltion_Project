@@ -40,7 +40,8 @@ fig, ax = plt.subplots(1, 1)
 
 a = 21 
 #X = CORR[:, :, 0+a:21+a]
-X = A[:, :, :22]
+X = CORR
+
 
 tracker = IndexTracker(ax, X)
 

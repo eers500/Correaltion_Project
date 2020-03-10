@@ -32,6 +32,16 @@ INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
 FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 
 #%%
+# Crop array
+CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
+
+# Substract background
+#MEAN = np.median(CAMERA_PHOTO, axis=-1)
+#for k in range(441):
+#    CAMERA_PHOTO[:, :, k] = CAMERA_PHOTO[:, :, k] / MEAN
+
+
+#%%
 # INDEX = 6
 # PKS = peak_local_max(CAMERA_PHOTO[:, :, INDEX], min_distance=1, threshold_abs=15)
 #
@@ -62,7 +72,7 @@ FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 # Y = np.arange(1644)
 # X, Y = np.meshgrid(Y, X)
 #
-# ax.plot_surface(X, Y, CAMERA_PHOTO[:, :, 0])
+# ax.plot_surface(X, Y, CAMERA_PHOTO[:, :, 1])
 # ax.tick_params(axis='both', labelsize=10)
 # ax.set_title('Cells Positions in 3D', fontsize='20')
 # ax.set_xlabel('x (pixels)', fontsize='18')
@@ -71,8 +81,9 @@ FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 # pyplot.show()
 
 #%%
-# for j in range(np.shape(CAMERA_PHOTO)[2]):
-#     CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.real(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]-1]))*np.sum(np.abs(CAMERA_PHOTO[:, :, j])))
+for j in range(np.shape(CAMERA_PHOTO)[2]):
+#    CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.real(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]-1]))*np.sum(np.abs(CAMERA_PHOTO[:, :, j])))
+    CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / np.sum(CAMERA_PHOTO[:, :, j])**2
 
 #%%
 # Normalization to compare images
@@ -156,3 +167,11 @@ print(IMAGE_FILTER_PAIR)
 # for i in range(len(ID_IM)):
 #     plt.figure()
 #     plt.imshow(CAMERA_PHOTO[:, :, ID_IM[i]])
+
+#%% Export to 2D .txt file
+T = np.empty((651*1220, 1644), order='C')
+
+for k in range(651):
+    T[k*1220:(k+1)*1220, :] = CAMERA_PHOTO[:, :, k]
+
+np.savetxt('camera_photo_2D_1220x1644.txt', T, fmt='%i' )
