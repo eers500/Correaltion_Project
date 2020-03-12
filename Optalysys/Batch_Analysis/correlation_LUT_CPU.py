@@ -8,7 +8,6 @@ Created on Thu Oct 31 18:50:28 2019
 
 import glob
 import numpy as np
-import cv2
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import functions as f
@@ -17,7 +16,7 @@ from scipy import ndimage
 
 #%%
 # Import LUT form images
-# LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
+#LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
 LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
 #LUT = [mpimg.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
 LUT = np.swapaxes(np.swapaxes(LUT, 0, 1), 1, 2)
@@ -68,7 +67,8 @@ print(T/60)
 #for k in range(np.shape(CORR)[2]):
 #    CORR[:, :, k] = CORR[:, :, k] / np.sum(CORR[:, :, k]**2)
 
-
+#%%
+CORR = np.load('CORR_CPU.npy')
 # Get (x,y) coordinates of maximum correlation spots
 MAX = []
 LOCS = np.empty((np.shape(CORR)[2], 2))
@@ -86,9 +86,10 @@ for i in range(np.shape(VID)[2]):
     
 #%%
 # Plot images with coordinates of maximum correlation    
-#k = 15         
-#plt.imshow(VID[:, :, k], cmap='gray')
-#plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
+k = 0         
+plt.imshow(VID[:, :, k], cmap='gray')
+plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
+plt.show()
 
 #%%
 # LUT_BINARY = np.zeros(np.shape(LUT), dtype='uint8')

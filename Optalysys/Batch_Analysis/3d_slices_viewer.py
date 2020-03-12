@@ -40,7 +40,7 @@ fig, ax = plt.subplots(1, 1)
 
 a = 21 
 #X = CORR[:, :, 0+a:21+a]
-X = CORR
+X = CAMERA_PHOTO[:, :, np.arange(21)*22]
 
 
 tracker = IndexTracker(ax, X)

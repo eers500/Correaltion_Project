@@ -106,3 +106,4 @@ venv.bak/
 *.mat
 Optalysys/Batch_Analysis/camera_photo_2D_1220x1644.txt
 Optalysys/Batch_Analysis/CORR.npy
+*.npy

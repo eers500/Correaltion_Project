@@ -31,9 +31,26 @@ CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
 INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
 FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 
+
+Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
+ZZ = CAMERA_PHOTO[:, :, Z]
+ZZZ = INPUT_IMAGE_NUMBER[0:21]
+ZZZZ = ZZZ[Z]
+
+CAMERA_PHOTO[:, :, 0:21] = ZZ
+INPUT_IMAGE_NUMBER[0:21] = ZZZZ
+del Z, ZZ, ZZZ, ZZZZ
+
 #%%
 # Crop array
-CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
+#CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
+#CAMERA_PHOTO = CAMERA_PHOTO[272:272+510, 482:482+512, :]
+s = np.sum(CAMERA_PHOTO**2, axis=(0, 1))
+fi = np.sum(np.repeat(FILTERS**2, 21, axis=-1), axis=(0, 1))
+CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
+
+for k in range(441):
+    CAMERA_PHOTO[:, :, k] = CAMERA_PHOTO[:, :, k] / (s[k] + fi[k])
 
 # Substract background
 #MEAN = np.median(CAMERA_PHOTO, axis=-1)
@@ -49,16 +66,6 @@ CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
 # plt.scatter(PKS[:, 1], PKS[:, 0], marker='o', facecolors='none', s=80, edgecolors='r')
 # plt.show()
 
-#%%
-# import plotly.graph_objects as go
-# from plotly.offline import plot
-#
-# fig = go.Figure(data=[go.Surface(z=CAMERA_PHOTO[:, :, 1])])
-# fig.update_traces(contours_z=dict(show=True, usecolormap=True,
-#                                  highlightcolor="limegreen", project_z=True))
-# fig.update_layout(title='correlation')
-# fig.show()
-# plot(fig)
 
 #%%
 # 3D Scatter Plot
@@ -72,7 +79,7 @@ CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
 # Y = np.arange(1644)
 # X, Y = np.meshgrid(Y, X)
 #
-# ax.plot_surface(X, Y, CAMERA_PHOTO[:, :, 1])
+# ax.plot_surface(X, Y, CAMERA_PHOTO[:, :, 20*22])
 # ax.tick_params(axis='both', labelsize=10)
 # ax.set_title('Cells Positions in 3D', fontsize='20')
 # ax.set_xlabel('x (pixels)', fontsize='18')
@@ -81,6 +88,7 @@ CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
 # pyplot.show()
 
 #%%
+# Pixel normalization
 for j in range(np.shape(CAMERA_PHOTO)[2]):
 #    CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.real(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]-1]))*np.sum(np.abs(CAMERA_PHOTO[:, :, j])))
     CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / np.sum(CAMERA_PHOTO[:, :, j])**2
@@ -123,40 +131,82 @@ CAMERA_PHOTO = CAMERA_PHOTOS
 
 #%%
 # Histogram equalization and normalization
-# CAMS, cdf = f.histeq(CAMERA_PHOTO)
+#CAMS, cdf = f.histeq(CAMERA_PHOTO)
+
+#%%
+# Get (x,y) coordinates of maximum correlation spots
+#CORR = np.empty((np.shape(CAMERA_PHOTO)[0], np.shape(CAMERA_PHOTO)[1] , 441), dtype='float32')
+
+MAX = []
+LOCS = np.empty((np.shape(CAMERA_PHOTO)[2], 2))
+for k in range(np.shape(CAMERA_PHOTO)[2]):
+    MAX.append(np.max(CAMERA_PHOTO[:, :, k]))
+    L = np.where(CAMERA_PHOTO[:, :, k] == np.max(CAMERA_PHOTO[:, :, k]))
+    LOCS[k, 0], LOCS[k, 1] = L[0][0], L[1][0]
+
+# Get maximum correlation filter for all images    
+MAX_FILT = np.empty(21) 
+for i in range(21):
+    M = MAX[i*21:i*21+21]
+    M = np.array(M)
+    MAX_FILT[i] = np.where(np.max(M) == M)[0][0]
+
+#%%
+# Plot images with coordinates of maximum correlation    
+k = 0         
+plt.imshow(CAMERA_PHOTO[:, :, k*22], cmap='jet')
+plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
+plt.show()
+
+#%%
+# Plot images with maximum values signaled
+k = 20         
+plt.imshow(CAMERA_PHOTO[:, :, k], cmap='jet')
+plt.scatter(LOCS[k,1], LOCS[k, 0], marker='o', color='r', facecolors='none')
+plt.show()
+#%%
+# import plotly.graph_objects as go
+# from plotly.offline import plot
+#
+# fig = go.Figure(data=[go.Surface(z=CAMERA_PHOTO[:, :, 44])])
+# fig.update_traces(contours_z=dict(show=True, usecolormap=True,
+#                                  highlightcolor="limegreen", project_z=True))
+# fig.update_layout(title='correlation')
+# fig.show()
+# plot(fig)
 
 #%%
 # For the first image (#1), we want to compare the correlation with all the filters
 # The indices of image #1 in its array is:
-IMAGE_FILTER_PAIR = np.zeros((len(np.unique(INPUT_IMAGE_NUMBER)), 2))
-
-for k in range(len(np.unique(INPUT_IMAGE_NUMBER))):
-    IM_NUMBER = k+1
-    ID_IM = np.where(INPUT_IMAGE_NUMBER == IM_NUMBER)
-    ID_IM = np.ravel(ID_IM)
-
-    # Get max values of every filter correlation with image IM_NUMBER to compare
-    MAX = np.empty(0, dtype='int8')
-    # MAX_COORD = np.empty((1, 2))
-
-    for i in range(len(ID_IM)):
-        # MAX.append(np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
-        # CAM_PHOTO_NORM = CAMERA_PHOTO[:, :, ID_IM[i]]
-        MAX = np.append(MAX, np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
-        # np.where()
-
-    # The filter number with maximum correlation with image IM_NUMBER is
-    I_MAX = np.where(MAX == np.max(MAX))
-
-    # The filter with maximum correlation is
-    MAX_CORR_FILTER = FILTER_IMAGE_NUMBER[ID_IM[I_MAX]]
-
-    # The image, and max correlation filter pair is then
-    IMAGE_FILTER_PAIR[k, 0] = IM_NUMBER
-    IMAGE_FILTER_PAIR[k, 1] = MAX_CORR_FILTER[0]
-    # IMAGE_FILTER_PAIR[k] = [IM_NUMBER, MAX_CORR_FILTER[0]]
-
-print(IMAGE_FILTER_PAIR)
+#IMAGE_FILTER_PAIR = np.zeros((len(np.unique(INPUT_IMAGE_NUMBER)), 2))
+#
+#for k in range(len(np.unique(INPUT_IMAGE_NUMBER))):
+#    IM_NUMBER = k+1
+#    ID_IM = np.where(INPUT_IMAGE_NUMBER == IM_NUMBER)
+#    ID_IM = np.ravel(ID_IM)
+#
+#    # Get max values of every filter correlation with image IM_NUMBER to compare
+#    MAX = np.empty(0, dtype='int8')
+#    # MAX_COORD = np.empty((1, 2))
+#
+#    for i in range(len(ID_IM)):
+#        # MAX.append(np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
+#        # CAM_PHOTO_NORM = CAMERA_PHOTO[:, :, ID_IM[i]]
+#        MAX = np.append(MAX, np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
+#        # np.where()
+#
+#    # The filter number with maximum correlation with image IM_NUMBER is
+#    I_MAX = np.where(MAX == np.max(MAX))
+#
+#    # The filter with maximum correlation is
+#    MAX_CORR_FILTER = FILTER_IMAGE_NUMBER[ID_IM[I_MAX]]
+#
+#    # The image, and max correlation filter pair is then
+#    IMAGE_FILTER_PAIR[k, 0] = IM_NUMBER
+#    IMAGE_FILTER_PAIR[k, 1] = MAX_CORR_FILTER[0]
+#    # IMAGE_FILTER_PAIR[k] = [IM_NUMBER, MAX_CORR_FILTER[0]]
+#
+#print(IMAGE_FILTER_PAIR)
 
 #%%
 # IMAGE = 3
@@ -169,9 +219,9 @@ print(IMAGE_FILTER_PAIR)
 #     plt.imshow(CAMERA_PHOTO[:, :, ID_IM[i]])
 
 #%% Export to 2D .txt file
-T = np.empty((651*1220, 1644), order='C')
-
-for k in range(651):
-    T[k*1220:(k+1)*1220, :] = CAMERA_PHOTO[:, :, k]
-
-np.savetxt('camera_photo_2D_1220x1644.txt', T, fmt='%i' )
+#T = np.empty((651*1220, 1644), order='C')
+#
+#for k in range(651):
+#    T[k*1220:(k+1)*1220, :] = CAMERA_PHOTO[:, :, k]
+#
+#np.savetxt('camera_photo_2D_1220x1644.txt', T, fmt='%i' )
