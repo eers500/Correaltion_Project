@@ -17,25 +17,34 @@ from scipy import ndimage
 #%%
 # Import LUT form images
 #LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
-LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
-#LUT = [mpimg.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
+# LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
+LUT = [mpimg.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
 LUT = np.swapaxes(np.swapaxes(LUT, 0, 1), 1, 2)
 LUT = np.uint8(255*(LUT / np.max(LUT)))
 #%%
 # Import Video correlate
-VID = f.videoImport("E://PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
-#VID = f.videoImport("/home/erick/Documents/PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
+# VID = f.videoImport("E://PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
+VID = f.videoImport("/home/erick/Documents/PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
 VID = VID[:, :, :21]
 
 #%%
-#plt.subplot(3, 2, 1); plt.imshow(VID[:, :, 0], cmap='gray')
-#plt.subplot(3, 2, 2); plt.imshow(LUT[:, :, 0], cmap='gray')
-#
-#plt.subplot(3, 2, 3); plt.imshow(VID[:, :, 10], cmap='gray')
-#plt.subplot(3, 2, 4); plt.imshow(LUT[:, :, 10], cmap='gray')
-#
-#plt.subplot(3, 2, 5); plt.imshow(VID[:, :, 20], cmap='gray')
-#plt.subplot(3, 2, 6); plt.imshow(LUT[:, :, 20], cmap='gray')
+# plt.subplot(1, 2, 1); plt.imshow(VID[:, :, 0], cmap='gray')
+# plt.subplot(1, 2, 2); plt.imshow(LUT[:, :, 0], cmap='gray')
+
+# plt.subplot(3, 2, 3); plt.imshow(VID[:, :, 10], cmap='gray')
+# plt.subplot(3, 2, 4); plt.imshow(LUT[:, :, 10], cmap='gray')
+
+# plt.subplot(3, 2, 5); plt.imshow(VID[:, :, 20], cmap='gray')
+# plt.subplot(3, 2, 6); plt.imshow(LUT[:, :, 20], cmap='gray')
+
+# plt.subplot(3, 2, 1); plt.imshow(VID_BINARY[:, :, 0], cmap='gray')
+# plt.subplot(3, 2, 2); plt.imshow(LUT_BINARY[:, :, 0], cmap='gray')
+
+# plt.subplot(3, 2, 3); plt.imshow(VID_BINARY[:, :, 10], cmap='gray')
+# plt.subplot(3, 2, 4); plt.imshow(LUT_BINARY[:, :, 10], cmap='gray')
+
+# plt.subplot(3, 2, 5); plt.imshow(VID_BINARY[:, :, 20], cmap='gray')
+# plt.subplot(3, 2, 6); plt.imshow(LUT_BINARY[:, :, 20], cmap='gray')
 
 
 #%%
@@ -86,7 +95,14 @@ for i in range(np.shape(VID)[2]):
     
 #%%
 # Plot images with coordinates of maximum correlation    
-k = 0         
+k = 19        
+plt.imshow(VID[:, :, k], cmap='gray')
+plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
+plt.show()
+
+#%%
+# Plot correlation results
+k = 19        
 plt.imshow(VID[:, :, k], cmap='gray')
 plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
 plt.show()

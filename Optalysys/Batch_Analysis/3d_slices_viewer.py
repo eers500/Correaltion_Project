@@ -14,7 +14,8 @@ class IndexTracker(object):
 
         self.X = X
         rows, cols, self.slices = X.shape
-        self.ind = self.slices//2
+        # self.ind = self.slices//2
+        self.ind = 0
 
         self.im = ax.imshow(self.X[:, :, self.ind], cmap='gray')
         self.update()
@@ -40,7 +41,7 @@ fig, ax = plt.subplots(1, 1)
 
 a = 21 
 #X = CORR[:, :, 0+a:21+a]
-X = CAMERA_PHOTO[:, :, np.arange(21)*22]
+X = IMAGES_F
 
 
 tracker = IndexTracker(ax, X)

@@ -31,6 +31,11 @@ CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
 INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
 FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 
+INPUT_IMAGE = scipy.io.loadmat('inputImagesBinary.mat')
+_, _, _, INPUT_IMAGE = INPUT_IMAGE.values()
+ 
+TARGET_IMAGE = scipy.io.loadmat('target_images_binary.mat')
+_, _, _, TARGET_IMAGE = TARGET_IMAGE.values()
 
 Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
 ZZ = CAMERA_PHOTO[:, :, Z]
@@ -42,6 +47,15 @@ INPUT_IMAGE_NUMBER[0:21] = ZZZZ
 del Z, ZZ, ZZZ, ZZZZ
 
 #%%
+# k=20
+# plt.subplot(1, 2, 1)
+# plt.imshow(INPUT_IMAGE[:, :, k], cmap='gray')
+
+# plt.subplot(1, 2, 2)
+# plt.imshow(IN[:, :, k], cmap='gray')
+
+# plt.show()
+#%%
 # Crop array
 #CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
 #CAMERA_PHOTO = CAMERA_PHOTO[272:272+510, 482:482+512, :]
@@ -49,8 +63,8 @@ s = np.sum(CAMERA_PHOTO**2, axis=(0, 1))
 fi = np.sum(np.repeat(FILTERS**2, 21, axis=-1), axis=(0, 1))
 CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 
-for k in range(441):
-    CAMERA_PHOTO[:, :, k] = CAMERA_PHOTO[:, :, k] / (s[k] + fi[k])
+# for k in range(441):
+#     CAMERA_PHOTO[:, :, k] = CAMERA_PHOTO[:, :, k] / (s[k] + fi[k])
 
 # Substract background
 #MEAN = np.median(CAMERA_PHOTO, axis=-1)
