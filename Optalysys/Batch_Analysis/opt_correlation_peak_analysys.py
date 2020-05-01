@@ -1,4 +1,4 @@
-#%%
+s#%%
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -44,8 +44,9 @@ CAMERA_PHOTO[:, :, 0:21] = ZZ
 INPUT_IMAGE_NUMBER[0:21] = ZZZZ
 del Z, ZZ, ZZZ, ZZZZ
 
-CORR_CPU = np.load('CORR_CPU.npy')
-CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
+# CORR_CPU = np.load('CORR_CPU.npy')
+# CAMERA_PHOTO = CORR_CPU;
+# CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 
 #%
 # IMAGE_NUM = 0 # Image number (1, 2,...)
@@ -86,12 +87,14 @@ def peak_gauss_fit_analysis(normalized_input, peak_number, peak_array, sel_size)
 
 #%
 SEL_SIZE = 10
-NUM_PEAKS = 10
+NUM_PEAKS = 4
 INTENSITY = []
 SIGMA = []
 OP = []
 PEAK_AREA = np.empty((2*SEL_SIZE, 2*SEL_SIZE, NUM_PEAKS, 441))
 PEAK_AREA_GAUSS = np.empty((2*SEL_SIZE, 2*SEL_SIZE, NUM_PEAKS, 441))
+P = []
+PP = []
 
 
 I = np.empty(NUM_PEAKS)
@@ -109,6 +112,8 @@ for jj in range(21):
         for k in range(len(PKS)):
             print(jj, ii, k)
             I[k], SIGMA_OPT[k], OPT_POWER[k], ZZ[:, :, k], DATA[:, :, k] = peak_gauss_fit_analysis(CAM_PHOTO_SLICE, peak_number=k, peak_array=PKS, sel_size=SEL_SIZE)
+            P.append([PEAK_AREA[:, :, k, SLICE]])        
+            PP.append([PEAK_AREA_GAUSS[:, :, k, SLICE]])
         
         PEAK_AREA[:, :, :, 21*jj+ii] = DATA
         PEAK_AREA_GAUSS[:, :, :, 21*jj+ii] = ZZ
@@ -116,7 +121,13 @@ for jj in range(21):
         SIGMA= np.concatenate((SIGMA, SIGMA_OPT), axis=0)
         OP = np.concatenate((OP, OPT_POWER), axis=0)
         
-
+# P = []
+# PP = []
+# for k in range(441):
+#     for i in range(NUM_PEAKS):
+#         P.append([PEAK_AREA[:, :, i, k]])        
+#         PP.append([PEAK_AREA_GAUSS[:, :, i, k]])
+        
 #%
 PEAKS = np.tile(np.arange(NUM_PEAKS), 441)    
 FI_IM_NUM= np.repeat(np.arange(21), repeats=21*NUM_PEAKS)
@@ -129,23 +140,56 @@ DF = pd.DataFrame({'CAM_PHOTO':CAM_PHOTO,
                    'PEAK_NUMBER': PEAKS,
                    'INTENSITY': INTENSITY,
                    'STD': SIGMA,
-                   'OPTICAL_POWER': OP})
+                   'OPTICAL_POWER': OP,
+                   'PEAK_AREA': P,
+                   'PEAK_AREA_GAUSS': PP})
+
+ #%%
        
-#%%
 i=0
 DF[i*10:(i+1)*10].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis')
+#%%
+AA = DF[DF['INPUT_IMAGE_NUMBER'] == DF['FILTER_NUMBER']]
+i=0
+fig, ax = plt.subplots(3, 2)
 
+AA[i*6:(i+1)*6].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis', ax=ax[0, 0])
+AA[(i+1)*6:(i+2)*6].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis', ax=ax[0, 1])
+AA[(i+2)*6:(i+3)*6].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis', ax=ax[1, 0])
+AA[(i+3)*6:(i+4)*6].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis', ax=ax[1, 1])
+AA[(i+4)*6:(i+5)*6].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis', ax=ax[2, 0])
+AA[(i+5)*6:(i+6)*6].plot.scatter(x='INTENSITY', y='OPTICAL_POWER', c='STD', colormap='viridis', ax=ax[2, 1])
 
 #%%
-# IM_NUM = 1
-# PK_NUM = 1
-# plt.subplot(1, 2, 1)        
-# plt.imshow(PEAK_AREA[:, :, PK_NUM, IM_NUM])
+IM_NUM = 0
+PK_NUM = 0
+fig, ax = plt.subplots(4, 2, constrained_layout=True)
 
-# plt.subplot(1, 2, 2)
-# plt.imshow(PEAK_AREA_GAUSS[:, :, PK_NUM, IM_NUM])
+ax[0, 0].imshow(DF.PEAK_AREA[0][0])
+ax[0, 0].set_title('Image number '+np.str(IM_NUM)+' with Peak number '+np.str(PK_NUM))
 
-# plt.show()
+ax[0, 1].imshow(DF.PEAK_AREA_GAUSS[0][0])
+plt.title('STD: '+np.str(IM_NUM)+' with Intensity '+np.str(PK_NUM))
+
+ax[1, 0].imshow(DF.PEAK_AREA[1][0])
+plt.title('Image number '+np.str(IM_NUM)+' with Peak number '+np.str(PK_NUM))
+
+ax[1, 1].imshow(DF.PEAK_AREA_GAUSS[1][0])
+plt.title('STD: '+np.str(IM_NUM)+' with Intensity '+np.str(PK_NUM))
+
+ax[2, 0].imshow(DF.PEAK_AREA[2][0])
+plt.title('Image number '+np.str(IM_NUM)+' with Peak number '+np.str(PK_NUM))
+
+ax[2, 1].imshow(DF.PEAK_AREA_GAUSS[2][0])
+plt.title('STD: '+np.str(IM_NUM)+' with Intensity '+np.str(PK_NUM))
+
+ax[3, 0].imshow(DF.PEAK_AREA[3][0])
+plt.title('Image number '+np.str(IM_NUM)+' with Peak number '+np.str(PK_NUM))
+
+ax[3, 1].imshow(DF.PEAK_AREA_GAUSS[3][0])
+plt.title('STD: '+np.str(IM_NUM)+' with Intensity '+np.str(PK_NUM))
+
+plt.show()
 
 
 #%%

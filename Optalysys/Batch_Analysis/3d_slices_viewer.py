@@ -41,8 +41,7 @@ fig, ax = plt.subplots(1, 1)
 
 a = 21 
 #X = CORR[:, :, 0+a:21+a]
-X = PEAK_AREA_GAUSS[:, :, 0, :]
-
+X = C
 
 tracker = IndexTracker(ax, X)
 
