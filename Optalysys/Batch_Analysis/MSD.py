@@ -30,33 +30,36 @@ def main():
     y = np.zeros(size)
     z = np.zeros(size)
     
+    val = np.random.randint(1, 7, size=size)               # Uniform
+    # val = np.random.binomial(5, 0.5, size=size) +1         # Binomial
+    
     for i in range(1, len(x)):
         
-        val = np.random.randint(1, 7)
-        # val = np.random.binomial(6, 0.7)
+        # val = np.random.randint(1, 7)
+        # val = np.random.binomial(5, 0.5) +1
         # val = np.random.normal()
         
-        if val == 1: 
+        if val[i] == 1: 
             x[i] = x[i - 1] + step
             y[i] = y[i - 1]
             z[i] = z[i - 1]
-        elif val == 2: 
+        elif val[i] == 2: 
             x[i] = x[i - 1] - step
             y[i] = y[i - 1]
             z[i] = z[i - 1]        
-        elif val == 3: 
+        elif val[i] == 3: 
             x[i] = x[i - 1] 
             y[i] = y[i - 1] + step
             z[i] = z[i - 1]
-        elif val == 4: 
+        elif val[i] == 4: 
             x[i] = x[i - 1] 
             y[i] = y[i - 1] - step
             z[i] = z[i - 1]
-        elif val == 5:
+        elif val[i] == 5:
             x[i] = x[i - 1] 
             y[i] = y[i - 1]
             z[i] = z[i - 1] + step
-        elif val == 6:
+        elif val[i] == 6:
             x[i] = x[i - 1] 
             y[i] = y[i - 1]
             z[i] = z[i - 1] - step
@@ -71,13 +74,14 @@ def main():
     ax.scatter(x[0], y[0], z[0], color='r', label='start')
     ax.scatter(x[-1], y[-1], z[-1], color='y', label='end')
     ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
-    ax.set_title('Random Particle Trajectory')
+    ax.set_title('Random Particle Trajectory: '+np.str(size)+' steps')
     ax.legend(loc='best')
     
+    n_points = 100
     ax = fig.add_subplot(1, 2, 2)
-    ax.plot(S, MS_DISP)
+    ax.plot(S[:n_points], MS_DISP[:n_points], '.-')
     ax.set_xlabel('t'); ax.set_ylabel('MSD')
-    ax.set_title('Mean Square Displacement')
+    ax.set_title('Mean Square Displacement: '+np.str(n_points)+' points')
     ax.grid()
     
     plt.show()

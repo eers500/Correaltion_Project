@@ -39,9 +39,9 @@ fig, ax = plt.subplots(1, 1)
 #gr =grad
 #gr[gr<1]=0
 
-a = 21 
+a = 2 
 #X = CORR[:, :, 0+a:21+a]
-X = C
+X = IZ
 
 tracker = IndexTracker(ax, X)
 
