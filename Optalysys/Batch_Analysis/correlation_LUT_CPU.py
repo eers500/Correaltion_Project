@@ -8,6 +8,8 @@ Created on Thu Oct 31 18:50:28 2019
 
 import glob
 import numpy as np
+import matplotlib as mpl
+mpl.rc('figure',  figsize=(10, 6))
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import functions as f
@@ -188,13 +190,13 @@ LL = np.empty((21, 2))
 for i in range(21):
 #i = 20
     k = 22*i
-    # plt.figure(i+1)
-    # plt.imshow(CORR[:, :, k])
+    plt.figure(i+1)
+    plt.imshow(CORR[:, :, k])
     L = np.where(CORR[:, :, k] == np.max(CORR[:, :, k]))
     LOCS0, LOCS1 = L[0][0], L[1][0]
     LL[i, 0], LL[i, 1] = LOCS0, LOCS1
-    # plt.scatter(LOCS1, LOCS0, marker='o', color='r', facecolors='none')
-    # plt.title('CPU: '+np.str(i+1))
+    plt.scatter(LOCS1, LOCS0, marker='o', color='r', facecolors='none')
+    plt.title('CPU: '+np.str(i+1))
     
     plt.show()
 

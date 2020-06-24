@@ -5,37 +5,61 @@ Created on Wed Mar 11 13:02:39 2020
 
 @author: erick
 """
-#%%
 import numpy as np
+import matplotlib as mpl
+mpl.rc('figure',  figsize=(20, 6))
 import matplotlib.pyplot as plt
 import scipy.io
+import easygui as gui
 
 #%%
-CAMERA_PHOTO = scipy.io.loadmat('camera_photo.mat')
+PATHS = gui.fileopenbox(msg='Select File', title='Files', default='/media/erick/NuevoVol/LINUX LAP/PhD', filetypes='.mat', multiple='True')
+
+#%% For Ground truth
+CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
 _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
 
-INPUT_IMAGE_NUMBER = scipy.io.loadmat('input_image_number.mat')
-_, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values()
+INPUT_IMAGE_NUMBER = scipy.io.loadmat(PATHS[2])
+_, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values() 
+INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER[0, :]
 
-FILTER_IMAGE_NUMBER = scipy.io.loadmat('filter_image_number.mat')
+FILTER_IMAGE_NUMBER = scipy.io.loadmat(PATHS[1])
 _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
-
-A, _ = np.where(INPUT_IMAGE_NUMBER > 21)
-CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
-INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
-FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
+FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER[0, :]
 
 Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
 ZZ = CAMERA_PHOTO[:, :, Z]
 ZZZ = INPUT_IMAGE_NUMBER[0:21]
 ZZZZ = ZZZ[Z]
 
-CAMERA_PHOTO[:, :, 0:21] = ZZ
-INPUT_IMAGE_NUMBER[0:21] = ZZZZ
-del Z, ZZ, ZZZ, ZZZZ
-
 CORR_CPU = np.load('CORR_CPU.npy')
-CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
+CAMERA_PHOTO = CAMERA_PHOTO[330:1076, 332:1037, :].astype('float32')
+#%%
+# CAMERA_PHOTO = scipy.io.loadmat('camera_photo.mat')
+# _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
+
+# INPUT_IMAGE_NUMBER = scipy.io.loadmat('input_image_number.mat')
+# _, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values()
+
+# FILTER_IMAGE_NUMBER = scipy.io.loadmat('filter_image_number.mat')
+# _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
+
+# A, _ = np.where(INPUT_IMAGE_NUMBER > 21)
+# CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
+# INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
+# FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
+
+# Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
+# ZZ = CAMERA_PHOTO[:, :, Z]
+# ZZZ = INPUT_IMAGE_NUMBER[0:21]
+# ZZZZ = ZZZ[Z]
+
+# CAMERA_PHOTO[:, :, 0:21] = ZZ
+# INPUT_IMAGE_NUMBER[0:21] = ZZZZ
+# del Z, ZZ, ZZZ, ZZZZ
+
+# CORR_CPU = np.load('CORR_CPU.npy')
+# CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 #%%
 # Check system "ideal" filter-image combination
 # Not all combination have good correlation image

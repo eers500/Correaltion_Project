@@ -7,35 +7,29 @@ Created on Tue Nov 26 13:59:50 2019
 """
 
 import numpy as np
+import matplotlib as mpl
+mpl.rc('figure',  figsize=(10, 6))
 import matplotlib.pyplot as plt
 import scipy.io
 import pandas as pd
 import functions as f
+import easygui as gui
 from skimage.feature import peak_local_max
 
-#%%
-CAMERA_PHOTO = scipy.io.loadmat('camera_photo.mat')
+#%
+PATHS = gui.fileopenbox(msg='Select File', title='Files', default='/media/erick/NuevoVol/LINUX LAP/PhD', filetypes='.mat', multiple='True')
+
+#%% For Colloids
+CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
 _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
 
-FILTERS = scipy.io.loadmat('filters.mat')
-_, _, _, FILTERS = FILTERS.values()
+INPUT_IMAGE_NUMBER = scipy.io.loadmat(PATHS[2])
+_, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values() 
+INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER[0, :]
 
-INPUT_IMAGE_NUMBER = scipy.io.loadmat('input_image_number.mat')
-_, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values()
-
-FILTER_IMAGE_NUMBER = scipy.io.loadmat('filter_image_number.mat')
+FILTER_IMAGE_NUMBER = scipy.io.loadmat(PATHS[1])
 _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
-
-A, _ = np.where(INPUT_IMAGE_NUMBER > 21)
-CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
-INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
-FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
-
-INPUT_IMAGE = scipy.io.loadmat('inputImagesBinary.mat')
-_, _, _, INPUT_IMAGE = INPUT_IMAGE.values()
- 
-TARGET_IMAGE = scipy.io.loadmat('target_images_binary.mat')
-_, _, _, TARGET_IMAGE = TARGET_IMAGE.values()
+FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER[0, :]
 
 Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
 ZZ = CAMERA_PHOTO[:, :, Z]
@@ -47,6 +41,39 @@ INPUT_IMAGE_NUMBER[0:21] = ZZZZ
 del Z, ZZ, ZZZ, ZZZZ
 
 #%%
+# CAMERA_PHOTOs = scipy.io.loadmat('camera_photo.mat')
+# _, _, _, CAMERA_PHOTOs = CAMERA_PHOTOs.values()
+
+# FILTERS = scipy.io.loadmat('filters.mat')
+# _, _, _, FILTERS = FILTERS.values()
+
+# INPUT_IMAGE_NUMBER = scipy.io.loadmat('input_image_number.mat')
+# _, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values()
+
+# FILTER_IMAGE_NUMBER = scipy.io.loadmat('filter_image_number.mat')
+# _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
+
+# A, _ = np.where(INPUT_IMAGE_NUMBER > 21)
+# CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
+# INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
+# FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
+
+# INPUT_IMAGE = scipy.io.loadmat('inputImagesBinary.mat')
+# _, _, _, INPUT_IMAGE = INPUT_IMAGE.values()
+ 
+# TARGET_IMAGE = scipy.io.loadmat('target_images_binary.mat')
+# _, _, _, TARGET_IMAGE = TARGET_IMAGE.values()
+
+# Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
+# ZZ = CAMERA_PHOTO[:, :, Z]
+# ZZZ = INPUT_IMAGE_NUMBER[0:21]
+# ZZZZ = ZZZ[Z]
+
+# CAMERA_PHOTO[:, :, 0:21] = ZZ
+# INPUT_IMAGE_NUMBER[0:21] = ZZZZ
+# del Z, ZZ, ZZZ, ZZZZ
+
+#%%
 # k=20
 # plt.subplot(1, 2, 1)
 # plt.imshow(INPUT_IMAGE[:, :, k], cmap='gray')
@@ -55,12 +82,11 @@ del Z, ZZ, ZZZ, ZZZZ
 # plt.imshow(IN[:, :, k], cmap='gray')
 
 # plt.show()
-#%%
-# Crop array
+#%% Crop array
 #CAMERA_PHOTO = CAMERA_PHOTO[246:948, 482:1163, :]
 #CAMERA_PHOTO = CAMERA_PHOTO[272:272+510, 482:482+512, :]
-s = np.sum(CAMERA_PHOTO**2, axis=(0, 1))
-fi = np.sum(np.repeat(FILTERS**2, 21, axis=-1), axis=(0, 1))
+# s = np.sum(CAMERA_PHOTO**2, axis=(0, 1))
+# fi = np.sum(np.repeat(FILTERS**2, 21, axis=-1), axis=(0, 1))
 CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 
 # for k in range(441):
@@ -81,11 +107,10 @@ CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 # plt.show()
 
 
-#%%
-# 3D Scatter Plot
+#%% 3D Scatter Plot
 # from mpl_toolkits.mplot3d import Axes3D
 # from matplotlib import pyplot
-#
+
 # fig = pyplot.figure()
 # ax = Axes3D(fig)
 #
@@ -101,14 +126,12 @@ CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 # ax.set_zlabel('z (slices)', fontsize='18')
 # pyplot.show()
 
-#%%
-# Pixel normalization
+#%% Pixel normalization
 # for j in range(np.shape(CAMERA_PHOTO)[2]):
 # #    CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / (np.sum(np.real(FILTERS[:, :, FILTER_IMAGE_NUMBER[j]-1]))*np.sum(np.abs(CAMERA_PHOTO[:, :, j])))
 #     CAMERA_PHOTO[:, :, j] = CAMERA_PHOTO[:, :, j] / np.sum(CAMERA_PHOTO[:, :, j])**2
 
-#%%
-# Normalization to compare images
+#%% Normalization to compare images
 # SUM_FILTS = np.empty(np.shape(CAMERA_PHOTO)[2])
 # SUM_CAM = np.empty_like(SUM_FILTS)
 # MULT = np.empty_like(SUM_FILTS)
@@ -143,12 +166,10 @@ CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 # # plt.imshow(CAMERA_PHOTOS[:, :, 0])
 
 
-#%%
-# Histogram equalization and normalization
+#%% Histogram equalization and normalization
 #CAMS, cdf = f.histeq(CAMERA_PHOTO)
 
-#%%
-# Get (x,y) coordinates of maximum correlation spots
+#%% Get (x,y) coordinates of maximum correlation spots
 #CORR = np.empty((np.shape(CAMERA_PHOTO)[0], np.shape(CAMERA_PHOTO)[1] , 441), dtype='float32')
 
 MAX = []
@@ -165,29 +186,27 @@ for i in range(21):
     M = np.array(M)
     MAX_FILT[i] = np.where(np.max(M) == M)[0][0]
 
-#%%
-# Plot images with coordinates of maximum correlation    
-k = 0         
-plt.imshow(CAMERA_PHOTO[:, :, k*22], cmap='jet')
+#%% Plot images with coordinates of maximum correlation    
+k = 20      
+plt.imshow(CAMERA_PHOTO[:, :, k*22], cmap='gray')
 plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
 plt.show()
 
-#%%
-# Plot images with maximum values signaled
-k = 20         
+#%% Plot images with maximum values signaled
+k = 0         
 plt.imshow(CAMERA_PHOTO[:, :, k], cmap='jet')
 plt.scatter(LOCS[k,1], LOCS[k, 0], marker='o', color='r', facecolors='none')
 plt.show()
-#%%
-# import plotly.graph_objects as go
-# from plotly.offline import plot
-#
-# fig = go.Figure(data=[go.Surface(z=CAMERA_PHOTO[:, :, 44])])
-# fig.update_traces(contours_z=dict(show=True, usecolormap=True,
-#                                  highlightcolor="limegreen", project_z=True))
-# fig.update_layout(title='correlation')
-# fig.show()
-# plot(fig)
+#%% Plotly surface plot
+import plotly.graph_objects as go
+from plotly.offline import plot
+
+fig = go.Figure(data=[go.Surface(z=CAMERA_PHOTO[:, :, 0])])
+fig.update_traces(contours_z=dict(show=True, usecolormap=True,
+                                  highlightcolor="limegreen", project_z=True))
+fig.update_layout(title='correlation')
+fig.show()
+plot(fig)
 
 #%%
 # For the first image (#1), we want to compare the correlation with all the filters
