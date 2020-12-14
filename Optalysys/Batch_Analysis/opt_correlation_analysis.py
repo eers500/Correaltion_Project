@@ -17,9 +17,25 @@ import easygui as gui
 from skimage.feature import peak_local_max
 
 #%
-PATHS = gui.fileopenbox(msg='Select File', title='Files', default='/media/erick/NuevoVol/LINUX LAP/PhD', filetypes='.mat', multiple='True')
+# PATH = '/media/erick/NuevoVol/LINUX_LAP/PhD/'
+PATHS = gui.fileopenbox(msg='Select File',
+                        title='Files', 
+                        # default='/home/erick/Documents/PhD/Correaltion_Project/Optalysys/Batch_Analysis/',
+                        # default='/media/erick/NuevoVol/LINUX_LAP/PhD/Optical_Correlation_Results/',
+                        default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/',
+                        filetypes='.mat', 
+                        multiple='True')
 
-#%% For Colloids
+
+number_of_images, number_of_filters = gui.multenterbox(msg='How much images and filters?',
+                            title='Number of images and filters',
+                            fields=['Number of images:',
+                                   'Number of filters:']) 
+
+number_of_images = int(number_of_images)
+number_of_filters = int(number_of_filters)
+
+#%% Read MAT files
 CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
 _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
 
@@ -31,14 +47,36 @@ FILTER_IMAGE_NUMBER = scipy.io.loadmat(PATHS[1])
 _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
 FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER[0, :]
 
-Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
-ZZ = CAMERA_PHOTO[:, :, Z]
-ZZZ = INPUT_IMAGE_NUMBER[0:21]
-ZZZZ = ZZZ[Z]
 
-CAMERA_PHOTO[:, :, 0:21] = ZZ
-INPUT_IMAGE_NUMBER[0:21] = ZZZZ
-del Z, ZZ, ZZZ, ZZZZ
+#%% For Colloids
+# Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
+# ZZ = CAMERA_PHOTO[:, :, Z]
+# ZZZ = INPUT_IMAGE_NUMBER[0:21]
+# ZZZZ = ZZZ[Z]
+
+# CAMERA_PHOTO[:, :, 0:21] = ZZ
+# INPUT_IMAGE_NUMBER[0:21] = ZZZZ
+# del Z, ZZ, ZZZ, ZZZZ
+#%% Order arrays according to image-filter combination
+ni, nj, nk = np.shape(CAMERA_PHOTO)
+cam = np.empty_like(CAMERA_PHOTO)
+# number = int(np.sqrt(np.shape(CAMERA_PHOTO)[2]))
+number = number_of_images*number_of_filters
+for k in range(number):
+    i_filt = np.where(FILTER_IMAGE_NUMBER==k+1)[0]
+    # images_number = INPUT_IMAGE_NUMBER[i_filt]
+    filter_temp = FILTER_IMAGE_NUMBER[i_filt]
+    images_temp = INPUT_IMAGE_NUMBER[i_filt]
+    i_images = np.argsort(images_temp)
+    frames = CAMERA_PHOTO[:, :, i_filt]
+    # cam[:, :, number*k:number*k+number] = frames[:, :, i_images]
+    cam[:, :, number_of_images*k:number_of_images*k+number_of_images] = frames[:, :, i_images]
+
+CAMERA_PHOTO = cam
+#%% Check for max correlation of first input image
+# CAM = CAMERA_PHOTO[:, :, :21]
+# MAX = np.max(CAM, axis=(0, 1))
+# MAX_ID = np.where(MAX == MAX.max())[0][0]
 
 #%%
 # CAMERA_PHOTOs = scipy.io.loadmat('camera_photo.mat')
@@ -54,7 +92,7 @@ del Z, ZZ, ZZZ, ZZZZ
 # _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
 
 # A, _ = np.where(INPUT_IMAGE_NUMBER > 21)
-# CAMERA_PHOTO = np.delete(CAMERA_PHOTO, A, axis=-1)
+# CAMERA_PHOTO = np.delete(CAMERA_PHOTOs, A, axis=-1)
 # INPUT_IMAGE_NUMBER = np.delete(INPUT_IMAGE_NUMBER, A)
 # FILTER_IMAGE_NUMBER = np.delete(FILTER_IMAGE_NUMBER , A)
 
@@ -63,6 +101,9 @@ del Z, ZZ, ZZZ, ZZZZ
  
 # TARGET_IMAGE = scipy.io.loadmat('target_images_binary.mat')
 # _, _, _, TARGET_IMAGE = TARGET_IMAGE.values()
+
+# BATCH_INPUT = scipy.io.loadmat('batchInput.mat')    # The ones that project all slices
+# _, _, _, BATCH_INPUT = BATCH_INPUT.values()
 
 # Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
 # ZZ = CAMERA_PHOTO[:, :, Z]
@@ -87,7 +128,7 @@ del Z, ZZ, ZZZ, ZZZZ
 #CAMERA_PHOTO = CAMERA_PHOTO[272:272+510, 482:482+512, :]
 # s = np.sum(CAMERA_PHOTO**2, axis=(0, 1))
 # fi = np.sum(np.repeat(FILTERS**2, 21, axis=-1), axis=(0, 1))
-CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
+# CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 
 # for k in range(441):
 #     CAMERA_PHOTO[:, :, k] = CAMERA_PHOTO[:, :, k] / (s[k] + fi[k])
@@ -105,26 +146,6 @@ CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 # plt.imshow(CAMERA_PHOTO[:, :, INDEX])
 # plt.scatter(PKS[:, 1], PKS[:, 0], marker='o', facecolors='none', s=80, edgecolors='r')
 # plt.show()
-
-
-#%% 3D Scatter Plot
-# from mpl_toolkits.mplot3d import Axes3D
-# from matplotlib import pyplot
-
-# fig = pyplot.figure()
-# ax = Axes3D(fig)
-#
-# X = np.arange(1220)
-# Y = np.arange(1644)
-# X, Y = np.meshgrid(Y, X)
-#
-# ax.plot_surface(X, Y, CAMERA_PHOTO[:, :, 20*22])
-# ax.tick_params(axis='both', labelsize=10)
-# ax.set_title('Cells Positions in 3D', fontsize='20')
-# ax.set_xlabel('x (pixels)', fontsize='18')
-# ax.set_ylabel('y (pixels)', fontsize='18')
-# ax.set_zlabel('z (slices)', fontsize='18')
-# pyplot.show()
 
 #%% Pixel normalization
 # for j in range(np.shape(CAMERA_PHOTO)[2]):
@@ -167,10 +188,26 @@ CAMERA_PHOTO = CAMERA_PHOTO[380:856, 604:1100, :].astype('float32')
 
 
 #%% Histogram equalization and normalization
-#CAMS, cdf = f.histeq(CAMERA_PHOTO)
+# CAMS, cdf = f.histeq(CAMERA_PHOTO)
 
 #%% Get (x,y) coordinates of maximum correlation spots
 #CORR = np.empty((np.shape(CAMERA_PHOTO)[0], np.shape(CAMERA_PHOTO)[1] , 441), dtype='float32')
+
+# To run from numpy array file of correlation results
+# CAMERA_PHOTO = np.load('CORR_GPU_Colloids_P1.npy')   # Same directory as script
+
+# path = '/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/'
+# CAMERA_PHOTO = np.load(path+'substack_GPU_Result.npy')
+# CAMERA_PHOTO = np.load(path+'substack_CES_GPU_Result.npy')
+# CAMERA_PHOTO = np.load(path+'substack_CPU_Result.npy')
+# CAMERA_PHOTO = np.load(path+'substack_CES_CPU_Result.npy')
+
+#%%
+# number_of_images = number
+# number_of_filters = number
+
+# number_of_images = 31
+# number_of_filters = 21
 
 MAX = []
 LOCS = np.empty((np.shape(CAMERA_PHOTO)[2], 2))
@@ -179,82 +216,111 @@ for k in range(np.shape(CAMERA_PHOTO)[2]):
     L = np.where(CAMERA_PHOTO[:, :, k] == np.max(CAMERA_PHOTO[:, :, k]))
     LOCS[k, 0], LOCS[k, 1] = L[0][0], L[1][0]
 
+#  Columns are the input images and rows are the input filters
+MAX = np.reshape(MAX, (number_of_filters, number_of_images), 'F')
+
+#%
 # Get maximum correlation filter for all images    
-MAX_FILT = np.empty(21) 
-for i in range(21):
-    M = MAX[i*21:i*21+21]
-    M = np.array(M)
-    MAX_FILT[i] = np.where(np.max(M) == M)[0][0]
+MAX_FILT = np.empty(number_of_images) 
+for i in range(number_of_images):
+    # M = MAX[i*21:i*21+21]
+    # M = np.array(M)
+    # MAX_FILT[i] = np.where(np.max(M) == M)[0][0]
+    MAX_FILT[i] = np.where(MAX[:, i] == MAX[:, i].max())[0][0]
+
+plt.figure()
+plt.imshow(MAX, cmap='viridis')
+plt.xlabel('Image Number', fontsize=15)
+plt.ylabel('Filter Number', fontsize=15)
+plt.title('Image Filter Combination Max Correlation P4', fontsize=20)
+plt.colorbar()
+plt.show()
+print(MAX_FILT)
+
+COMB = np.transpose(np.vstack((INPUT_IMAGE_NUMBER, FILTER_IMAGE_NUMBER)))
+# f.imshow_sequence(CAMERA_PHOTO, 0.1, 1)
+
+#%% Fit for resolution improvement
+from scipy.optimize import curve_fit
+
+# def func(x, a, b, c):
+#     return a*x**2 + b*x + c
+
+def func(x, MAX, x0, sigma):
+    return MAX * np.exp(-(x-x0)**2 / (2*sigma**2))
+
+plt.figure()
+# MMAX = np.pad(MAX, ((3, 3), (0, 0)), 'reflect')
+for k in range(len(MAX)):
+    ydata = MAX[:, k]
+    xdata = np.arange(len(ydata))
+    
+    if k>1:
+        plt.cla()
+        plt.plot(xdata, ydata, 'bo-', label='data')
+        
+        popt, pcov = curve_fit(func, xdata, ydata, bounds=(0, [200, 10, 1.2]))
+        xfit = np.linspace(0, len(ydata), 100)
+        yfit = func(xfit, *popt)
+        plt.plot(xfit, yfit, 'g-', label='fit')
+        
+        max_bool = yfit == yfit.max()
+        plt.plot(xfit[max_bool], yfit[max_bool] , 'r*', 
+                  label='new max at = (%5.3f, %5.3f)' % tuple([xfit[max_bool], yfit[max_bool]]))
+        plt.xlabel('Filter', fontsize=15)
+        plt.ylabel('Pixel Value', fontsize=15)
+        
+        plt.legend()
+        plt.show()
+        plt.pause(1)
+        plt.savefig(np.str(k)+'.png')
+    print(popt)
+#%%
+# from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib.pyplot as plt
+# import numpy as np
+# from matplotlib import cm
+
+
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+
+# # Make data
+# ra = np.arange(1024)
+# x, y = np.meshgrid(622, 708)
+
+# # Plot the surface
+# ax.plot_surface(x, y, CAMERA_PHOTO[:,:,0], rstride=1, cstride=1, cmap=cm.viridis_r)
+
+# plt.show()
+
+#%% Export results data to CSV
+# results = pd.DataFrame()
+# results['P4-5'] = MAX_FILT
+
+# file_name = '/home/erick/Documents/PhD/Correaltion_Project/Optalysys/Batch_Analysis/June_04_2020_GT_data/GT_results.txt'
+# file_name = '/media/erick/NuevoVol/LINUX_LAP/PhD/Optical_Correlation_Results/Colloids_results.csv'
+# results.to_csv(file_name, index=False)
 
 #%% Plot images with coordinates of maximum correlation    
-k = 20      
-plt.imshow(CAMERA_PHOTO[:, :, k*22], cmap='gray')
-plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
-plt.show()
+# k = 20   
+# plt.imshow(CAMERA_PHOTO[:, :, k*22], cmap='gray')
+# plt.scatter(LOCS[k*21+k,1], LOCS[k*21+k, 0], marker='o', color='r', facecolors='none')
+# plt.show()
 
 #%% Plot images with maximum values signaled
-k = 0         
-plt.imshow(CAMERA_PHOTO[:, :, k], cmap='jet')
-plt.scatter(LOCS[k,1], LOCS[k, 0], marker='o', color='r', facecolors='none')
-plt.show()
+# k = 0         
+# plt.imshow(CAMERA_PHOTO[:, :, k], cmap='jet')
+# plt.scatter(LOCS[k,1], LOCS[k, 0], marker='o', color='r', facecolors='none')
+# plt.show()
 #%% Plotly surface plot
-import plotly.graph_objects as go
-from plotly.offline import plot
+# import plotly.graph_objects as go
+# from plotly.offline import plot
 
-fig = go.Figure(data=[go.Surface(z=CAMERA_PHOTO[:, :, 0])])
-fig.update_traces(contours_z=dict(show=True, usecolormap=True,
-                                  highlightcolor="limegreen", project_z=True))
-fig.update_layout(title='correlation')
-fig.show()
-plot(fig)
+# fig = go.Figure(data=[go.Surface(z=MAX)])
+# fig.update_traces(contours_z=dict(show=True, usecolormap=True,
+#                                   highlightcolor="limegreen", project_z=True))
+# fig.update_layout(title='correlation')
+# fig.show()
+# plot(fig)
 
-#%%
-# For the first image (#1), we want to compare the correlation with all the filters
-# The indices of image #1 in its array is:
-#IMAGE_FILTER_PAIR = np.zeros((len(np.unique(INPUT_IMAGE_NUMBER)), 2))
-#
-#for k in range(len(np.unique(INPUT_IMAGE_NUMBER))):
-#    IM_NUMBER = k+1
-#    ID_IM = np.where(INPUT_IMAGE_NUMBER == IM_NUMBER)
-#    ID_IM = np.ravel(ID_IM)
-#
-#    # Get max values of every filter correlation with image IM_NUMBER to compare
-#    MAX = np.empty(0, dtype='int8')
-#    # MAX_COORD = np.empty((1, 2))
-#
-#    for i in range(len(ID_IM)):
-#        # MAX.append(np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
-#        # CAM_PHOTO_NORM = CAMERA_PHOTO[:, :, ID_IM[i]]
-#        MAX = np.append(MAX, np.max(CAMERA_PHOTO[:, :, ID_IM[i]]))
-#        # np.where()
-#
-#    # The filter number with maximum correlation with image IM_NUMBER is
-#    I_MAX = np.where(MAX == np.max(MAX))
-#
-#    # The filter with maximum correlation is
-#    MAX_CORR_FILTER = FILTER_IMAGE_NUMBER[ID_IM[I_MAX]]
-#
-#    # The image, and max correlation filter pair is then
-#    IMAGE_FILTER_PAIR[k, 0] = IM_NUMBER
-#    IMAGE_FILTER_PAIR[k, 1] = MAX_CORR_FILTER[0]
-#    # IMAGE_FILTER_PAIR[k] = [IM_NUMBER, MAX_CORR_FILTER[0]]
-#
-#print(IMAGE_FILTER_PAIR)
-
-#%%
-# IMAGE = 3
-# ID1 = np.where(INPUT_IMAGE_NUMBER != IMAGE)
-# PHOTOS_1 = np.delete(CAMERA_PHOTO, ID1, axis=-1)
-
-#%%
-# for i in range(len(ID_IM)):
-#     plt.figure()
-#     plt.imshow(CAMERA_PHOTO[:, :, ID_IM[i]])
-
-#%% Export to 2D .txt file
-#T = np.empty((651*1220, 1644), order='C')
-#
-#for k in range(651):
-#    T[k*1220:(k+1)*1220, :] = CAMERA_PHOTO[:, :, k]
-#
-#np.savetxt('camera_photo_2D_1220x1644.txt', T, fmt='%i' )

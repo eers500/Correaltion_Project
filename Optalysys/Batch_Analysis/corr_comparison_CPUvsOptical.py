@@ -7,12 +7,12 @@ Created on Wed Mar 11 13:02:39 2020
 """
 import numpy as np
 import matplotlib as mpl
-mpl.rc('figure',  figsize=(20, 6))
+mpl.rc('figure',  figsize=(10, 6))
 import matplotlib.pyplot as plt
 import scipy.io
 import easygui as gui
 
-#%%
+#%% Select camera_photo, input_image_number and filter_image_number arrays
 PATHS = gui.fileopenbox(msg='Select File', title='Files', default='/media/erick/NuevoVol/LINUX LAP/PhD', filetypes='.mat', multiple='True')
 
 #%% For Ground truth

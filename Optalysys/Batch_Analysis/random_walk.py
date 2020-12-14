@@ -65,27 +65,27 @@ MS_DISP, S = MSD(X[:, 0], X[:, 1], X[:, 2], dt)
 
 #%% Plot
 
-# fig = plt.figure()
+fig = plt.figure()
 
-# ax =  fig.add_subplot(1, 2, 1, projection='3d')
-# ax.plot(X[:, 0], X[:, 1], X[:, 2])
-# ax.scatter(X[0, 0], X[0, 1], X[0, 2], color='r', label='start', )
-# ax.scatter(X[-1, 0], X[-1, 1], X[-1, 2], color='y', label='end')
-# ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
-# ax.set_title('Random Particle Trajectory: '+np.str(N)+' steps')
-# ax.legend(loc='best')
+ax =  fig.add_subplot(1, 2, 1, projection='3d')
+ax.plot(X[:, 0], X[:, 1], X[:, 2])
+ax.scatter(X[0, 0], X[0, 1], X[0, 2], color='r', label='start', )
+ax.scatter(X[-1, 0], X[-1, 1], X[-1, 2], color='y', label='end')
+ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
+ax.set_title('Random Particle Trajectory: '+np.str(N)+' steps')
+ax.legend(loc='best')
 
 
-# n_points = 200
-# ax = fig.add_subplot(1, 2, 2)
-# ax.plot(S[:n_points], MS_DISP[:n_points], '.-', label='MSD')
-# ax.plot(S[:n_points], 6*D*S[:n_points], label='6Dt')
-# ax.set_xlabel('t'); ax.set_ylabel('MSD')
-# ax.set_title('Mean Square Displacement: '+np.str(n_points)+' points')
-# ax.legend()
-# ax.grid()
+n_points = 200
+ax = fig.add_subplot(1, 2, 2)
+ax.plot(S[:n_points], MS_DISP[:n_points], '.-', label='MSD')
+ax.plot(S[:n_points], 6*D*S[:n_points], label='6Dt')
+ax.set_xlabel('t'); ax.set_ylabel('MSD')
+ax.set_title('Mean Square Displacement: '+np.str(n_points)+' points')
+ax.legend()
+ax.grid()
 
-# plt.show()
+plt.show()
 
 #%%
     
@@ -98,36 +98,36 @@ MS_DISP, S = MSD(X[:, 0], X[:, 1], X[:, 2], dt)
 
 #%%
 
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
+# import dash
+# import dash_core_components as dcc
+# import dash_html_components as html
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+# app.layout = html.Div(children=[
+#     html.H1(children='Hello Dash'),
 
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
+#     html.Div(children='''
+#         Dash: A web application framework for Python.
+#     '''),
 
-    dcc.Graph(
-        id='example-graph',
-        figure={
-            'data': [
-                {'x': X[:, 0], 'y': X[:, 1], 'z':X[:, 2], 'type': 'scatter3d', 'name': 'Trajectory', 'mode': 'lines'},
-                {'x': X[0, 0], 'y': X[0, 1], 'z':X[0, 2], 'type': 'scatter3d', 'name': 'Start', 'mode':'marker', 'color':'yellow', 'size':221},
-                {'x': X[-1, 0], 'y': X[-1, 1], 'z':X[-1, 2], 'type': 'scatter3d', 'name': 'End', 'mode':'marker', 'color':'red', 'size':221},
-            ],
-            'layout': {
-                'title': 'Dash Data V'
-            }
-        }
-    )
-])
+#     dcc.Graph(
+#         id='example-graph',
+#         figure={
+#             'data': [
+#                 {'x': X[:, 0], 'y': X[:, 1], 'z':X[:, 2], 'type': 'scatter3d', 'name': 'Trajectory', 'mode': 'lines'},
+#                 {'x': X[0, 0], 'y': X[0, 1], 'z':X[0, 2], 'type': 'scatter3d', 'name': 'Start', 'mode':'marker', 'color':'yellow', 'size':221},
+#                 {'x': X[-1, 0], 'y': X[-1, 1], 'z':X[-1, 2], 'type': 'scatter3d', 'name': 'End', 'mode':'marker', 'color':'red', 'size':221},
+#             ],
+#             'layout': {
+#                 'title': 'Dash Data V'
+#             }
+#         }
+#     )
+# ])
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# if __name__ == '__main__':
+#     app.run_server(debug=True)
     

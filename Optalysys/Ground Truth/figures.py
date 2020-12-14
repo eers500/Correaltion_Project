@@ -25,7 +25,7 @@ ax[2, 0].tick_params(axis='both', direction='in', which='both', top=True, right=
 ax[2, 0].set_xlabel('Z [$\mu$m]', fontsize=20)
 ax[1, 0].set_ylabel('Z\' [$\mu$m]', fontsize=20)
 
-plt.show()
+#plt.show()
 
 #%%
 from matplotlib.pylab import *
