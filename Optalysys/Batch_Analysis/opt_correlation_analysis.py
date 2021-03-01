@@ -19,7 +19,7 @@ from skimage.feature import peak_local_max
 #%
 # PATH = '/media/erick/NuevoVol/LINUX_LAP/PhD/'
 PATHS = gui.fileopenbox(msg='Select File',
-                        title='Files', 
+                        title='Files',
                         # default='/home/erick/Documents/PhD/Correaltion_Project/Optalysys/Batch_Analysis/',
                         # default='/media/erick/NuevoVol/LINUX_LAP/PhD/Optical_Correlation_Results/',
                         default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/',
@@ -47,7 +47,16 @@ FILTER_IMAGE_NUMBER = scipy.io.loadmat(PATHS[1])
 _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
 FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER[0, :]
 
+#%%
+import mat73
+data_dict = mat73.loadmat(PATHS[0])
 
+#%%
+import h5py
+arrays = {}
+f = h5py.File(PATHS[0])
+for k, v in f.items():
+    arrays[k] = np.array(v)
 #%% For Colloids
 # Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
 # ZZ = CAMERA_PHOTO[:, :, Z]
@@ -240,41 +249,111 @@ print(MAX_FILT)
 COMB = np.transpose(np.vstack((INPUT_IMAGE_NUMBER, FILTER_IMAGE_NUMBER)))
 # f.imshow_sequence(CAMERA_PHOTO, 0.1, 1)
 
-#%% Fit for resolution improvement
+#%% Fit local values resolution improvement
+# from scipy.optimize import curve_fit
+
+# # def func(x, a, b, c):
+# #     return a*x**2 + b*x + c
+
+# def func(x, MAX, x0, sigma):
+#     return MAX * np.exp(-(x-x0)**2 / (2*sigma**2))
+
+# plt.figure()
+# MMAX = np.pad(MAX, ((3, 3), (0, 0)), 'linear_ramp')
+# for k in range(len(MAX)):
+#     ydata = MMAX[:, k]
+#     xdata = np.arange(len(ydata))
+    
+#     plt.cla()
+#     plt.plot(xdata, ydata, 'bo-', label='data')
+    
+#     popt, pcov = curve_fit(func, xdata, ydata, bounds=(0, [200, 10, 1.2]))
+#     xfit = np.linspace(0, len(ydata), 100)
+#     yfit = func(xfit, *popt)
+#     plt.plot(xfit, yfit, 'g-', label='fit')
+    
+#     max_bool = yfit == yfit.max()
+#     plt.plot(xfit[max_bool], yfit[max_bool] , 'r*', 
+#               label='new max at = (%5.3f, %5.3f)' % tuple([xfit[max_bool], yfit[max_bool]]))
+#     plt.xlabel('Filter', fontsize=15)
+#     plt.ylabel('Pixel Value', fontsize=15)
+    
+#     plt.legend()
+#     plt.show()
+#     plt.pause(1)
+#     # plt.savefig(np.str(k)+'.png')
+#     print(popt)
+
+#%% Optimize measurement using local values fit
 from scipy.optimize import curve_fit
 
 # def func(x, a, b, c):
-#     return a*x**2 + b*x + c
+#     return -a*x**2 + b*x + c
 
 def func(x, MAX, x0, sigma):
     return MAX * np.exp(-(x-x0)**2 / (2*sigma**2))
 
+padval = 3    # value >1
+table = []
 plt.figure()
-# MMAX = np.pad(MAX, ((3, 3), (0, 0)), 'reflect')
-for k in range(len(MAX)):
-    ydata = MAX[:, k]
+MMAX = np.pad(MAX, ((padval, padval), (0, 0)), 'wrap')
+for k in range(MMAX.shape[1]):
+    # plt.cla()
+    ydata = MMAX[:, k]
     xdata = np.arange(len(ydata))
-    
-    if k>1:
-        plt.cla()
-        plt.plot(xdata, ydata, 'bo-', label='data')
-        
-        popt, pcov = curve_fit(func, xdata, ydata, bounds=(0, [200, 10, 1.2]))
-        xfit = np.linspace(0, len(ydata), 100)
-        yfit = func(xfit, *popt)
-        plt.plot(xfit, yfit, 'g-', label='fit')
-        
-        max_bool = yfit == yfit.max()
-        plt.plot(xfit[max_bool], yfit[max_bool] , 'r*', 
-                  label='new max at = (%5.3f, %5.3f)' % tuple([xfit[max_bool], yfit[max_bool]]))
-        plt.xlabel('Filter', fontsize=15)
-        plt.ylabel('Pixel Value', fontsize=15)
-        
-        plt.legend()
-        plt.show()
-        plt.pause(1)
-        plt.savefig(np.str(k)+'.png')
+    yy = ydata[k:k+2*padval+1]
+    xx = np.linspace(-int(np.sqrt(padval))+k, int(np.sqrt(padval))+k, len(yy))
+    popt, pcov = curve_fit(func, xx, yy, bounds=(0, [200, 20, 10]))
+    xxfit = np.linspace(-2+k, 2+k, 100)
+    yyfit = func(xxfit, *popt)
+    max_max = yyfit == yyfit.max()
+    plt.plot(xxfit[max_max][0], yyfit[max_max][0] , 'rH', 
+                  label='new max at = (%5.3f, %5.3f)' % tuple([xxfit[max_max][0], yyfit[max_max][0]]))
+    plt.vlines(xxfit[max_max][0], yyfit[max_max][0], 255, 'red')
+    plt.plot(xx, yy, 'g.-')
+    plt.plot(xxfit, yyfit, 'b-')
+    plt.grid()
+    plt.show()
+    plt.pause(0.5)
+    table.append(popt)
     print(popt)
+plt.legend()
+
+#%% Fit for resolution improvement using all data
+# from scipy.optimize import curve_fit
+
+# # def func(x, a, b, c):
+# #     return a*x**2 + b*x + c
+
+# def func(x, MAX, x0, sigma):
+#     return MAX * np.exp(-(x-x0)**2 / (2*sigma**2))
+
+# plt.figure()
+# # MMAX = np.pad(MAX, ((3, 3), (0, 0)), 'reflect')
+# for k in range(len(MAX)):
+#     ydata = MAX[:, k]
+#     xdata = np.arange(len(ydata))
+    
+#     if k>1:
+#         plt.cla()
+#         plt.plot(xdata, ydata, 'bo-', label='data')
+        
+#         popt, pcov = curve_fit(func, xdata, ydata, bounds=(0, [200, 10, 1.2]))
+#         xfit = np.linspace(0, len(ydata)-1, 100)
+#         yfit = func(xfit, *popt)
+#         plt.plot(xfit, yfit, 'g-', label='fit')
+        
+#         max_bool = yfit == yfit.max()
+#         plt.plot(xfit[max_bool], yfit[max_bool] , 'r*', 
+#                   label='new max at = (%5.3f, %5.3f)' % tuple([xfit[max_bool], yfit[max_bool]]))
+#         plt.xlabel('Filter', fontsize=15)
+#         plt.ylabel('Pixel Value', fontsize=15)
+        
+#         plt.legend()
+#         plt.show()
+#         plt.pause(1)
+#         # plt.savefig(np.str(k)+'.png')
+#         print(popt)
 #%%
 # from mpl_toolkits.mplot3d import Axes3D
 # import matplotlib.pyplot as plt

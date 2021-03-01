@@ -26,7 +26,7 @@ path_vid = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_20082
 VID = f.videoImport(path_vid, 0)
 MAX_VID = np.max(VID)
 VID = np.uint8(255*(VID / MAX_VID))
-
+VID = VID[:, :, :1000]
 #%% Import LUT form images
 #LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
 # LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
@@ -68,39 +68,40 @@ LUT_BINARY = np.zeros(np.shape(LUT))
 VID_BINARY = np.zeros(np.shape(VID))
 
 LUT_BINARY[LUT >= np.mean(LUT)] = 255
-VID_BINARY[VID >= np.mean(LUT)] = 255
+VID_BINARY[VID >= np.mean(VID)] = 255
 
 CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]), dtype='float32')
 
-A = np.repeat(VID_BINARY, repeats=10, axis=-1).astype('float32')
-B = np.tile(LUT_BINARY, 10).astype('float32')
+A = np.repeat(VID_BINARY.astype('uint8'), repeats=40, axis=-1).astype('float16')
+B = np.tile(LUT_BINARY, 1000).astype('float16')
 
 #%% Correltion in GPU
-# @vectorize(["complex128(complex128, complex128)"], target='cuda')   #not good
-# @jit(nopython=True) 
-# def corr_gpu(a, b):
-#     return a * np.conj(b)
+#@vectorize(["complex128(complex128, complex128)"], target='cuda')   #not good
+@jit(nopython=True) 
+def corr_gpu(a, b):
+    return a*np.conj(b)
 
-# def pad_with(vector, pad_width, iaxis, kwargs):
-#     pad_value = kwargs.get('padder', 0)
-#     vector[:pad_width[0]] = pad_value
-#     vector[-pad_width[1]:] = pad_value
+def pad_with(vector, pad_width, iaxis, kwargs):
+    pad_value = kwargs.get('padder', 0)
+    vector[:pad_width[0]] = pad_value
+    vector[-pad_width[1]:] = pad_value
 
-# BB = np.empty_like(A)
-# for k in range(np.shape(B)[2]):
-#     BB[:, :, k] = np.pad(B[:, :, k], int((1024-110)/2))
+BB = np.empty_like(A)
+for k in range(np.shape(B)[2]):
+    # BB[:, :, k] = np.pad(B[:, :, k], int((1024-110)/2))
+    BB[:, :, k] = np.pad(B[:, :, k], int((226-44)/2))
 
-# FT = lambda x: np.fft.fftshift(np.fft.fft2(x))
-# IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(X))
+FT = lambda x: np.fft.fftshift(np.fft.fft2(x))
+IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(X))
 
-# C = np.empty_like(A)
-# T0 = time.time()
-# for k in range(np.shape(A)[2]):
-#     print(k)
-#     R = corr_gpu(FT(A[:, :, k]), FT(BB[:, :, k])).astype('complex64')
-#     C[:, :, k] = np.abs(IFT(R))
-# T = time.time()- T0
-# print(T)
+C = np.empty_like(A)
+T0 = time.time()
+for k in range(np.shape(A)[2]):
+    print(k)
+    R = corr_gpu(FT(A[:, :, k]), FT(BB[:, :, k])).astype('complex64')
+    C[:, :, k] = np.abs(IFT(R))
+T = time.time()- T0
+print(T)
 
 # 22 seconds
 #%%
@@ -161,11 +162,6 @@ plt.imshow(MAX, cmap='viridis')
 plt.show()
 print(MAX_FILT)
  
-#%% Fit for resolution improvement
-data = MAX[:, 10]
-plt.plot(data)
-plt.show()
-
 #%%
 # import plotly.express as px
 # import pandas as pd
