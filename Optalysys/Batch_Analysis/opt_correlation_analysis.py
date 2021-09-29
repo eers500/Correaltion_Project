@@ -36,8 +36,8 @@ number_of_images = int(number_of_images)
 number_of_filters = int(number_of_filters)
 
 #%% Read MAT files
-CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
-_, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
+# CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
+# _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
 
 INPUT_IMAGE_NUMBER = scipy.io.loadmat(PATHS[2])
 _, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values() 
@@ -48,8 +48,8 @@ _, _, _, FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER.values()
 FILTER_IMAGE_NUMBER = FILTER_IMAGE_NUMBER[0, :]
 
 #%%
-import mat73
-data_dict = mat73.loadmat(PATHS[0])
+# import mat73
+# data_dict = mat73.loadmat(PATHS[0])
 
 #%%
 import h5py
@@ -57,6 +57,11 @@ arrays = {}
 f = h5py.File(PATHS[0])
 for k, v in f.items():
     arrays[k] = np.array(v)
+    
+CAMERA_PHOTO = arrays['camera_photo']
+CAMERA_PHOTO = np.swapaxes(CAMERA_PHOTO, 0, 1)
+CAMERA_PHOTO = np.swapaxes(CAMERA_PHOTO, 1, 2)
+
 #%% For Colloids
 # Z = np.argsort(INPUT_IMAGE_NUMBER[0:21])
 # ZZ = CAMERA_PHOTO[:, :, Z]
@@ -82,6 +87,7 @@ for k in range(number):
     cam[:, :, number_of_images*k:number_of_images*k+number_of_images] = frames[:, :, i_images]
 
 CAMERA_PHOTO = cam
+del cam
 #%% Check for max correlation of first input image
 # CAM = CAMERA_PHOTO[:, :, :21]
 # MAX = np.max(CAM, axis=(0, 1))
@@ -218,6 +224,16 @@ CAMERA_PHOTO = cam
 # number_of_images = 31
 # number_of_filters = 21
 
+#%% Transpose CAMERA_PHOTO if flipped
+s = np.shape(CAMERA_PHOTO)
+cam = np.zeros((s[1], s[0], s[2]), dtype='uint8')
+for k in range(np.shape(CAMERA_PHOTO)[-1]):
+    cam[:, :, k] = np.transpose(CAMERA_PHOTO[:, :, k])
+    
+CAMERA_PHOTO = cam
+del cam
+
+#%%
 MAX = []
 LOCS = np.empty((np.shape(CAMERA_PHOTO)[2], 2))
 for k in range(np.shape(CAMERA_PHOTO)[2]):
@@ -227,15 +243,25 @@ for k in range(np.shape(CAMERA_PHOTO)[2]):
 
 #  Columns are the input images and rows are the input filters
 MAX = np.reshape(MAX, (number_of_filters, number_of_images), 'F')
+Li, Lj = LOCS[:, 0], LOCS[:, 1]
+
+Li = np.reshape(Li, (number_of_filters, number_of_images), 'F')
+Lj = np.reshape(Lj, (number_of_filters, number_of_images), 'F')
 
 #%
 # Get maximum correlation filter for all images    
 MAX_FILT = np.empty(number_of_images) 
+pos_i = []
+pos_j = []
 for i in range(number_of_images):
     # M = MAX[i*21:i*21+21]
     # M = np.array(M)
     # MAX_FILT[i] = np.where(np.max(M) == M)[0][0]
     MAX_FILT[i] = np.where(MAX[:, i] == MAX[:, i].max())[0][0]
+    pos_i.append(Li[int(MAX_FILT[i]), i])
+    pos_j.append(Lj[int(MAX_FILT[i]), i])
+    
+    
 
 plt.figure()
 plt.imshow(MAX, cmap='viridis')

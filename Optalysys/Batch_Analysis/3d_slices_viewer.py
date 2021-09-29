@@ -41,8 +41,8 @@ fig, ax = plt.subplots(1, 1)
 
 a = 2 
 #X = CORR[:, :, 0+a:21+a]
-# X = CAMERA_PHOTO
-X = rs
+X = C
+# X = rs
 tracker = IndexTracker(ax, X)
 
 fig.canvas.mpl_connect('scroll_event', tracker.onscroll)

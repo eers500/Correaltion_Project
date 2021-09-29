@@ -26,11 +26,11 @@ M = max(CORR(:));
 [id, jd] = find(CORR == M);
 
 %% Run correlation of Optical Computer
-tic
-[CORRO, SELO, IMO_BIN] = optCorrFunction(img, selection);
-toc
-MO = max(CORRO(:));
-[ido, jdo] = find(CORRO == MO);
+% tic
+% [CORRO, SELO, IMO_BIN] = optCorrFunction(img, selection);
+% toc
+% MO = max(CORRO(:));
+% [ido, jdo] = find(CORRO == MO);
 
 %% Plot CPU correlation results
 figure(1)
@@ -51,18 +51,18 @@ axis square
 
 
 %% Plot Optical Computer correlation results
-figure(2)
-subplot(1, 3, 1)
-sgtitle('Optical Correlation')
-imagesc(img); hold on
-scatter(jd, id, 100, 'r');
-axis square
-
-subplot(1,3,2)
-imagesc(SELO); 
-axis square
-
-subplot(1,3,3)
-imagesc(CORRO); hold on;
-scatter(jdo, ido, 100, 'r');
-axis square
+% figure(2)
+% subplot(1, 3, 1)
+% sgtitle('Optical Correlation')
+% imagesc(img); hold on
+% scatter(jd, id, 100, 'r');
+% axis square
+% 
+% subplot(1,3,2)
+% imagesc(SELO); 
+% axis square
+% 
+% subplot(1,3,3)
+% imagesc(CORRO); hold on;
+% scatter(jdo, ido, 100, 'r');
+% axis square

@@ -72,7 +72,7 @@ def peak_gauss_fit_analysis(normalized_input, peak_number, peak_array, sel_size)
     chisq = np.empty_like(sig)
     
     for ii in range(np.shape(sig)[0]):
-            chisq[ii] = np.sum((DATA - gauss(I, pks[0][0], J, pks[0][1], sig[ii], np.max(DATA)))**2)/np.var(DATA)
+            chisq[ii] = np.sum((DATA - gauss(I, pks[0][0], J, pks[0][1], sig[ii], np.max(DATA)))**2) / np.var(DATA)
                 
     LOC_MIN = np.where(chisq == np.min(chisq))
     SIGMA_OPT = sig[LOC_MIN[0][0]]

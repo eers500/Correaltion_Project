@@ -12,8 +12,8 @@ IFILT = double(imread('SampleRing.png'));
 % IFILTPAD = IFILTPAD(:, :, 1);
 
 %%
-% CORR = imfilter(IM, IFILT, 'symmetric', 'corr');
-CORR = xcorr2(IM, IFILTPAD);
+CORR = imfilter(IM, IFILT, 'symmetric', 'corr');
+%CORR = xcorr2(IM, IFILTPAD);
 %%
 FT = @(x)  ifftshift(fft2(fftshift( x )));
 IFT = @(X) ifftshift(ifft2(fftshift( X )));

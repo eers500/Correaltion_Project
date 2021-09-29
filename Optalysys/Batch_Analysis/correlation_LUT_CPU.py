@@ -26,7 +26,8 @@ path_vid = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_20082
 VID = f.videoImport(path_vid, 0)
 MAX_VID = np.max(VID)
 VID = np.uint8(255*(VID / MAX_VID))
-VID = VID[:, :, :1000]
+# VID = VID[:, :, :1000]
+# VID = VID[:, :, 0:-1:2]
 #%% Import LUT form images
 #LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
 # LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
@@ -70,10 +71,12 @@ VID_BINARY = np.zeros(np.shape(VID))
 LUT_BINARY[LUT >= np.mean(LUT)] = 255
 VID_BINARY[VID >= np.mean(VID)] = 255
 
-CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]), dtype='float32')
+#CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]), dtype='float32')
 
-A = np.repeat(VID_BINARY.astype('uint8'), repeats=40, axis=-1).astype('float16')
-B = np.tile(LUT_BINARY, 1000).astype('float16')
+A = np.repeat(VID_BINARY.astype('uint8'), repeats=LUT.shape[-1], axis=-1).astype('float16')
+B = np.tile(LUT_BINARY, VID.shape[-1]).astype('float16')
+
+del VID, VID_BINARY, LUT, LUT_BINARY
 
 #%% Correltion in GPU
 #@vectorize(["complex128(complex128, complex128)"], target='cuda')   #not good
@@ -89,19 +92,31 @@ def pad_with(vector, pad_width, iaxis, kwargs):
 BB = np.empty_like(A)
 for k in range(np.shape(B)[2]):
     # BB[:, :, k] = np.pad(B[:, :, k], int((1024-110)/2))
-    BB[:, :, k] = np.pad(B[:, :, k], int((226-44)/2))
-
+    BB[:, :, k] = np.pad(B[:, :, k], int((A.shape[0]-B.shape[0])/2))
+del B
 FT = lambda x: np.fft.fftshift(np.fft.fft2(x))
 IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(X))
 
-C = np.empty_like(A)
+C = np.empty_like(A, dtype='float32')
 T0 = time.time()
+T = []
 for k in range(np.shape(A)[2]):
+# for k in range(100):
     print(k)
-    R = corr_gpu(FT(A[:, :, k]), FT(BB[:, :, k])).astype('complex64')
-    C[:, :, k] = np.abs(IFT(R))
-T = time.time()- T0
-print(T)
+    BFT = FT(BB[:,:,k])
+    R = corr_gpu(FT(A[:, :, k]), BFT).astype('complex64')
+    # C[:, :, k] = np.abs(IFT(R))
+    C[:, :, k] = np.abs(IFT(R / np.sum(BFT)))    # Normalize with sum of pixel values of filters
+    T.append((time.time()-T0)/60)
+print(T[-1])
+
+del A, BB
+# CC = np.reshape(C, (226*39000, 226))
+# np.savetxt('F:\PhD\Archea_LW\LUT_CES_30\GPU_corr_21.58min_226.txt', CC, fmt='%i', delimiter=',')
+
+# np.savez_compressed('F:\PhD\Archea_LW\LUT_CES_44\GPU_corr_7.78min_226_400frames_every5_normalised_filter_sum_squared.npz', a=C)
+# np.savez_compressed('F:\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07_GPU_corr_275of550frames.npz', a=C)
+# np.save('F:\PhD\E_coli\may2021\5\20x_100Hz_05us_EcoliHCB1-07_GPU_corr.npy', a=C)
 
 # 22 seconds
 #%%
