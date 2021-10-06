@@ -14,9 +14,14 @@ from skimage import restoration
 from skimage.feature import peak_local_max
 from tqdm import tqdm
 
+type_of_correlation = 'GPU' # CPU, GPU or Optical
+
 #%% Import 2D track and load correaltion array
 
-pnumber = 0
+magnification = 40
+fs = 0.711                  # px/um
+SZ = 40                     # step size of LUT [Archea: 10um,E. coli: 20, 40, 20]
+pnumber = 58                # Archea: 3, E.coli 35, 58, 4   MAY 0
 path_track = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
 track_data = pd.read_csv(path_track)
 r0_track_df = track_data[track_data['TRACK_ID'] == pnumber]
@@ -28,6 +33,10 @@ r0_track = r0_track_df[['POSITION_Y', 'POSITION_X']].values
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\'+'CC.npy')   # Ecoli Sample 2 - particle 4
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\31_aug_21\\CC_4x.npy') # Sample 2 - particle 4
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\'+'CC.npy') #particle 0
+
+# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\ZNCC\\GPU\\C_corr_zn.npy') # - particle 35
+CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_09us_06\\ZNCC\\GPU\\C_corr_zn.npy')   # - particle 58
+# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\ZNCC\\GPU\\C_corr_zn.npy')   # Ecoli Sample 2 - particle 4
 
 #%%
 def gauss(x, x0, y, y0, sigma, MAX):
@@ -118,14 +127,14 @@ def peak_gauss_fit_analysis(input2darray):
 
 
 #%%
-number_of_images = 275   # Archea = 400, 400 , Ecoli = 275, 400, 430, 700 # MAY 275
-number_of_filters = 30  #Archea = 39, 25 , Ecoli = 30, 20,  19, 20        # MAY 30  
+number_of_images = 430   # Archea = 400 , Ecoli = 430, 430, 700  # MAY 275
+number_of_filters = 19  #Archea =  25 ,   Ecoli =  19,  19,  20  # MAY 30  
 N = CC.shape[-1]
 std_dev = np.nan*np.ones((number_of_images, number_of_filters))
 max_val = np.nan*np.ones_like(std_dev)
 fit = np.empty((number_of_images, number_of_filters), dtype='object')
 data = np.empty((number_of_images, number_of_filters), dtype='object')
-filter_match = np.nan*np.ones(number_of_images)
+f_match = np.nan*np.ones(number_of_images)
 step = 3
 method = 'std_dev' # max or std_dev
 
@@ -149,12 +158,12 @@ for i in tqdm(range(number_of_images)):
                 data[i, j] = vals[4]
         
         if method == 'std_dev':
-            filter_match[i] = np.where(std_dev[i, :] == np.nanmin(std_dev[i, :]))[0][0]
+            f_match[i] = np.where(std_dev[i, :] == np.nanmin(std_dev[i, :]))[0][0]
         elif method == 'max':
-            filter_match[i] = np.where(max_val[i, :] == np.nanmax(max_val[i, :]))[0][0]
+            f_match[i] = np.where(max_val[i, :] == np.nanmax(max_val[i, :]))[0][0]
         
     else:
-        center_index = int(filter_match[i-1])                                       # From previous iteration
+        center_index = int(f_match[i-1])                                       # From previous iteration
         indices = np.arange(center_index-step, center_index+step+1)                 # Indices to to use to fit gaussian
         
         if (indices < 0).any():                                                     # Border handling
@@ -180,42 +189,69 @@ for i in tqdm(range(number_of_images)):
                 data[i, j] = vals[4]
             
         if method == 'std_dev':
-            filter_match[i] = np.where(std_dev[i, :] == np.nanmin(std_dev[i, :]))[0][0]
+            if np.isnan(std_dev[i, :]).all():
+                f_match[i] = f_match[i-1]
+            else:
+                f_match[i] = np.where(std_dev[i, :] == np.nanmin(std_dev[i, :]))[0][0]
         elif method == 'max':
-            filter_match[i] = np.where(max_val[i, :] == np.nanmax(max_val[i, :]))[0][0]
+            f_match[i] = np.where(max_val[i, :] == np.nanmax(max_val[i, :]))[0][0]
             
         T.append(time.time() - T0)
 print(T[-1]/60)
 
 #%%
-n = 0
-m = 0
-fig, ax = plt.subplots(1,2, sharex=True, sharey=True)
-ax[0].imshow(data[n, m])
-ax[1].imshow(fit[n, m])
-f.surf(data[n, m])
-f.surf(fit[n, m])
+# n = 0
+# m = 0
+# fig, ax = plt.subplots(1,2, sharex=True, sharey=True)
+# ax[0].imshow(data[n, m])
+# ax[1].imshow(fit[n, m])
+# f.surf(data[n, m])
+# f.surf(fit[n, m])
+
+# #%%
+# fig, ax = plt.subplots(4, 4)
+# fig1, ax1 = plt.subplots(4, 4)
+# frame = 0
+# p=3
+
+# for i in range(4):
+#     for j in range(4):
+#         ax[i, j].imshow(data[frame, i*p+j])
+#         ax[i, j].axis('off')
+        
+#         ax1[i, j].imshow(fit[frame, i*p+j])
+#         ax1[i, j].axis('off')
+# plt.show()
 
 #%% Filter filter_match selection to avoid suddent jumps
 from scipy import ndimage
 
-coord_i = r0_track[:, 0]
-coord_j = r0_track[:, 1]
+coord_i = r0_track[:, 0]*(1/fs)/magnification
+coord_j = r0_track[:, 1]*(1/fs)/magnification
 
-num = np.arange(len(filter_match)-1)
-jump = np.abs(np.diff(filter_match)) 
+zz = np.arange(number_of_filters-1, -1, -1)*SZ
+    
+coord_k = np.empty_like(f_match)
+for k in range(len(f_match)):
+    # filter_match = zz[int(filt)]
+    coord_k[k] = zz[int(f_match[k])]
+
+
+
+num = np.arange(len(coord_k)-1)
+jump = np.abs(np.diff(coord_k)) 
 smooth_jump = ndimage.gaussian_filter1d(jump, 1, mode='mirror')  # window of size 5 is arbitrary
 
 # plt.figure(1)
 # plt.plot(50+jump, '.-') 
 # plt.plot(smooth_jump, '.-')
 
-limit = 2*np.mean(smooth_jump)    # factor 2 is arbitrary
+limit = 100*np.mean(smooth_jump)    # factor 2 is arbitrary
 # limit=15
 
-filter_sel = filter_match[:-1]
+coord_kk = coord_k[:-1]
 boolean = (jump >= 0) & (smooth_jump < limit)
-filtered = filter_sel[boolean]
+filtered = coord_kk[boolean]
 
 # plt.figure(2)
 # plt.plot(np.arange(len(filter_match)), 50+filter_match, '.-')
@@ -228,60 +264,40 @@ coord_ii = coord_ii[boolean]
 coord_jj = coord_jj[boolean]
 frame = num[boolean]
 
+# zz = np.arange(number_of_filters-1, -1, -1)*SZ
+# coord_z = []
+# for filt in filtered:
+#     coord_z.append(zz[int(filt)])
+
 
 #%
 #% CSAPS Smoothing
 import functions as f
 
 # L = np.stack((coord_j, coord_i, filter_match), axis=1)
-L = np.stack((coord_jj, coord_ii, filtered), axis=1)
+# L = np.stack((coord_jj, coord_ii, filtered), axis=1)
+L = np.stack((coord_jj, coord_ii, coord_kk), axis=1)
 LL = pd.DataFrame(L, columns=['X', 'Y', 'Z'])
 
-[x_smooth, y_smooth, z_smooth] = f.csaps_smoothing(LL, 0.9999, False)
-# [x_smooth, y_smooth, z_smooth] = f.csaps_smoothing(LL, 1, False)
+[x_smooth, y_smooth, z_smooth] = f.csaps_smoothing(LL, 1-1E-6, False)
 
 #% 3D Scatter Plot
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot
-#%matplotlib qt
-#%
-
-# zz = 20*np.arange(0, 20)
-# z_pos = np.empty_like(filtered)
-# for i in range(len(z_pos)):
-#     z_pos[i] = zz[filtered[i]]
-
-xx_shift = x_smooth-x_smooth.min()
-xx_smooth = 100*xx_shift/xx_shift.max()
-
-yy_shift = y_smooth-y_smooth.min()
-yy_smooth = 100*yy_shift/yy_shift.max()
-
-zz_shift = z_smooth
-zz_smooth = 1-zz_shift/zz_shift.max()
 
 fig = plt.figure(1)
-ax = fig.add_subplot(111, projection='3d')
-# ax.scatter(coord_j, coord_i, filter_match, c=np.linspace(0, 1, len(filter_match)), label='Detected Positions')
-ax.scatter(coord_jj, coord_ii, filtered, c=frame, label='Detected Positions')
-# ax.scatter(coord_jj, coord_ii, z_pos, c=frame, label='Detected Positions')
-ax.plot(x_smooth, y_smooth, z_smooth, c='red', label='Detected Positions')
-# ax.plot(xx_smooth, yy_smooth, 100*zz_smooth, c='red', label='Detected Positions')
-# ax.plot(xx_shift, yy_shift, 100*zz_smooth, c='blue', label='Detected Positions')
+ax1 = fig.add_subplot(111, projection='3d')
+# ax1.scatter(coord_i, coord_j, coord_k, c=np.linspace(0, 1, len(f_match)), label='Detected Positions')
+ax1.scatter(coord_ii, coord_jj, coord_kk, c=frame, label='Detected Positions')
+ax1.plot(y_smooth, x_smooth, z_smooth, c='red', label='Detected Positions')
 
 
-ax.set_xlabel(r'X [$\mu$m]')
-ax.set_ylabel('Y [$\mu$m]')
-ax.set_zlabel('Z[$\mu$m]')
-ax.set_title('Optical Correlation', fontsize=20)
+ax1.set_xlabel('Y [$\mu$m]')
+ax1.set_ylabel('X [$\mu$m]')
+ax1.set_zlabel('Z[$\mu$m]')
+ax1.set_title(type_of_correlation+' Correlation', fontsize=20)
 pyplot.show()
         
-#%%
-# path = 'F:\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\Loc_track'
-
-
-# f.exportAVI(path+'\loc_vid.avi', vid_surr, 80, 80, 30)
-
 
 
 

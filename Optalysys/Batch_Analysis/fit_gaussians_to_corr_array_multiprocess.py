@@ -18,25 +18,7 @@ from multiprocessing import cpu_count
 # from tqdm import tqdm
 import tqdm
 
-#%% Import 2D track and load correaltion array
 
-pnumber = 3
-# path_track = 'C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\'+'Spots in tracks statistics_35.csv'
-# path_track = 'C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\Spots in tracks statistics_p0.csv'
-# path_track = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
-path_track = 'C:\\Users\\eers500\\Documents\\PhD\\Archea_LW\\Spots in tracks statistics_p3.csv'
-
-track_data = pd.read_csv(path_track)
-r0_track_df = track_data[track_data['TRACK_ID'] == pnumber]
-r0_track = r0_track_df[['POSITION_Y', 'POSITION_X']].values
-
-# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\'+'CC.npy')   # Ecoli Sample 1 - 03 - particle 35
-# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_09us_06\\'+'CC.npy')   # Ecoli Sample 1 - 06 - particle 58
-# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\'+'CC.npy')   # Ecoli Sample 2 - particle 4
-# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\31_aug_21\\CC_4x.npy')
-# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\'+'CC.npy')
-
-#%%
 def gauss(x, x0, y, y0, sigma, MAX):
             # return 1/(np.sqrt(2*np.pi)*sigma) * np.exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))
             return MAX * np.exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))
@@ -55,7 +37,7 @@ def peak_gauss_fit_analysis(input2darray):
     
     # T0 = time.time()
     temp_input = input2darray[int(si/2)-dr:int(si/2)+dr, int(sj/2)-dr:int(sj/2)+dr]
-    pkss = peak_local_max(temp_input, num_peaks=10)   
+    pkss = peak_local_max(temp_input, num_peaks=10, threshold_rel=0.8)   
     pks = (rmid+pkss)-dr
     # print(time.time()-T0)
     
@@ -129,14 +111,16 @@ def peak_gauss_fit_analysis(input2darray):
 
 if __name__=='__main__':
     print('\nLoading array...')
-    # CC = np.load('C:\\Users\\eers500\\Documents\\E_coli\\June2021\\14\\sample_2\\'+'CC.npy')   # Ecoli Sample 2   
-    # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\'+'CC.npy')   # Ecoli Sample 1 - 03
+    # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\'+'CC.npy')   # Ecoli Sample 2   
+    CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\'+'CC.npy')   # Ecoli Sample 1 - 03
     # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_09us_06\\'+'CC.npy')   # Ecoli Sample 1 - 06
     # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\'+'CC.npy')
+    # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\ZNCC\\GPU\\C_corr_zn.npy')   # Ecoli Sample 2 - particle 4
+    # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\Archea_LW\\ZNCC\\GPU\\C_corr_zn.npy')
     print('\nDone!')
     
-    number_of_images = 400   # Archea = 400, 400 , Ecoli = 275, 400, 430, 700 # MAY 275
-    number_of_filters = 25  #Archea = 39, 25 , Ecoli = 30, 20,  19, 20        # MAY 30
+    number_of_images = 430   # Archea = 400, 400 , Ecoli = 275, 400, 430, 700 # MAY 275
+    number_of_filters = 19  #Archea = 39, 25 , Ecoli = 30, 20,  19, 20        # MAY 30
     std_dev = np.empty((number_of_images*number_of_filters))
     max_val = np.empty_like(std_dev)
     fit = np.empty((number_of_images* number_of_filters), dtype='object')
@@ -180,92 +164,104 @@ if __name__=='__main__':
     fit = np.reshape(fit, (number_of_images, number_of_filters))
     data = np.reshape(data, (number_of_images, number_of_filters))
     R2 = np.reshape(R2, (number_of_images, number_of_filters))
-        
+
+#%% Import 2D track and load correaltion array
+
+# pnumber = 35
+# path_track = 'C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\'+'Spots in tracks statistics_35.csv'
+# # path_track = 'C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\Spots in tracks statistics_p0.csv'
+# # path_track = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
+# # path_track = 'C:\\Users\\eers500\\Documents\\PhD\\Archea_LW\\Spots in tracks statistics_p3.csv'
+# # path_track = 'C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\Spots in tracks statistics_4.csv'
+
+# track_data = pd.read_csv(path_track)
+# r0_track_df = track_data[track_data['TRACK_ID'] == pnumber]
+# r0_track = r0_track_df[['POSITION_Y', 'POSITION_X']].values        
 #%%
-method = 'std_dev' # std_dev or max_val
+# method = 'std_dev' # std_dev or max_val
 
-if method == 'std_dev':
-    std_val = np.nanmin(std_dev, axis=1)
-    coord_i = r0_track[:, 0]
-    coord_j = r0_track[:, 1]
-    std_min = np.zeros_like(std_dev, dtype=bool)
+# if method == 'std_dev':
+#     std_val = np.nanmin(std_dev, axis=1)
+#     coord_i = r0_track[:, 0]
+#     coord_j = r0_track[:, 1]
+#     std_min = np.zeros_like(std_dev, dtype=bool)
     
-    for i in range(len(std_val)):
-        vv = std_dev[i, :] == std_val[i]
-        v = np.where(std_dev[i, :] == std_val[i])[0]
-        if np.count_nonzero(vv) == 1:
-            std_min[i, v[0]] = True
+#     for i in range(len(std_val)):
+#         vv = std_dev[i, :] == std_val[i]
+#         v = np.where(std_dev[i, :] == std_val[i])[0]
+#         if np.count_nonzero(vv) == 1:
+#             std_min[i, v[0]] = True
         
-        elif np.count_nonzero(vv) > 1:
-            std_min[i, v[0]] = True 
+#         elif np.count_nonzero(vv) > 1:
+#             std_min[i, v[0]] = True 
     
-    image_match, filter_match = np.where(std_min == True)
-    coord_i = coord_i[image_match]
-    coord_j = coord_j[image_match]
+#     image_match, filter_match = np.where(std_min == True)
+#     coord_i = coord_i[image_match]
+#     coord_j = coord_j[image_match]
     
-elif method == 'max_val':
-    max_vals = np.nanmin(max_val, axis=1)
-    coord_i = r0_track[:, 0]
-    coord_j = r0_track[:, 1]
-    val_max = np.zeros_like(max_val, dtype=bool)
+# elif method == 'max_val':
+#     max_vals = np.nanmin(max_val, axis=1)
+#     coord_i = r0_track[:, 0]
+#     coord_j = r0_track[:, 1]
+#     val_max = np.zeros_like(max_val, dtype=bool)
     
-    for i in range(len(max_vals)):
-        vv = max_val[i, :] == max_vals[i]
-        v = np.where(max_val[i, :] == max_vals[i])[0]
-        if np.count_nonzero(vv) == 1:
-            val_max[i, v[0]] = True
+#     for i in range(len(max_vals)):
+#         vv = max_val[i, :] == max_vals[i]
+#         v = np.where(max_val[i, :] == max_vals[i])[0]
+#         if np.count_nonzero(vv) == 1:
+#             val_max[i, v[0]] = True
         
-        elif np.count_nonzero(vv) > 1:
-            val_max[i, v[0]] = True 
+#         elif np.count_nonzero(vv) > 1:
+#             val_max[i, v[0]] = True 
     
-    image_match, filter_match = np.where(val_max == True)
-    coord_i = coord_i[image_match]
-    coord_j = coord_j[image_match]
+#     image_match, filter_match = np.where(val_max == True)
+#     coord_i = coord_i[image_match]
+#     coord_j = coord_j[image_match]
 
-#%% Filter filter_match selection to avoid suddent jumps
-from scipy import ndimage
+# #%% Filter filter_match selection to avoid suddent jumps
+# from scipy import ndimage
 # import functions as f
 
-num = np.arange(len(filter_match)-1)
-jump = np.abs(np.diff(filter_match)) 
-smooth_jump = ndimage.gaussian_filter1d(jump, 1, mode='mirror')  # window of size 5 is arbitrary
+# num = np.arange(len(filter_match)-1)
+# jump = np.abs(np.diff(filter_match)) 
+# smooth_jump = ndimage.gaussian_filter1d(jump, 1, mode='mirror')  # window of size 5 is arbitrary
 
-limit = 2*np.mean(smooth_jump)    # factor 2 is arbitrary
+# limit = 200*np.mean(smooth_jump)    # factor 2 is arbitrary
 
-filter_sel = filter_match[:-1]
-boolean = (jump >= 0) & (smooth_jump < limit)
-filtered = filter_sel[boolean]
+# filter_sel = filter_match[:-1]
+# boolean = (jump >= 0) & (smooth_jump < limit)
+# filtered = filter_sel[boolean]
 
-coord_ii = coord_i[:-1]
-coord_jj = coord_j[:-1]
+# coord_ii = coord_i[:-1]
+# coord_jj = coord_j[:-1]
 
-coord_ii = coord_ii[boolean]
-coord_jj = coord_jj[boolean]
-frame = num[boolean]
+# coord_ii = coord_ii[boolean]
+# coord_jj = coord_jj[boolean]
+# frame = num[boolean]
 
 
-# L = np.stack((coord_j, coord_i, filter_match), axis=1)
-L = np.stack((coord_jj, coord_ii, filtered), axis=1)
-LL = pd.DataFrame(L, columns=['X', 'Y', 'Z'])
+# # L = np.stack((coord_j, coord_i, filter_match), axis=1)
+# L = np.stack((coord_jj, coord_ii, filtered), axis=1)
+# LL = pd.DataFrame(L, columns=['X', 'Y', 'Z'])
 
-[x_smooth, y_smooth, z_smooth] = f.csaps_smoothing(LL, 0.999, False)
+# [x_smooth, y_smooth, z_smooth] = f.csaps_smoothing(LL, 0.999, False)
 
-#%% 3D Scatter Plot
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import pyplot
-#%matplotlib qt
+# #%% 3D Scatter Plot
+# from mpl_toolkits.mplot3d import Axes3D
+# from matplotlib import pyplot
+# #%matplotlib qt
 
-fig = plt.figure(1)
-ax = fig.add_subplot(111, projection='3d')
-# ax.scatter(coord_j, coord_i, filter_match, c=np.linspace(0, 1, len(filter_match)), label='Detected Positions')
-ax.scatter(coord_jj, coord_ii, filtered, c=frame, label='Detected Positions')
-ax.plot(x_smooth, y_smooth, z_smooth, c='red', label='Detected Positions')
+# fig = plt.figure(1)
+# ax = fig.add_subplot(111, projection='3d')
+# # ax.scatter(coord_j, coord_i, filter_match, c=np.linspace(0, 1, len(filter_match)), label='Detected Positions')
+# ax.scatter(coord_jj, coord_ii, filtered, c=frame, label='Detected Positions')
+# ax.plot(x_smooth, y_smooth, z_smooth, c='red', label='Detected Positions')
 
-# ax.set_xlabel(r'X [$\mu$m]')
-# ax.set_ylabel('Y [$\mu$m]')
-# ax.set_zlabel('Z[$\mu$m]')
-ax.set_title('Optical Correlation', fontsize=20)
-pyplot.show()
+# # ax.set_xlabel(r'X [$\mu$m]')
+# # ax.set_ylabel('Y [$\mu$m]')
+# # ax.set_zlabel('Z[$\mu$m]')
+# ax.set_title('Optical Correlation', fontsize=20)
+# pyplot.show()
                
         
 

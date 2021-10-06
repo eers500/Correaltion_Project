@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct 31 18:50:28 2019
+Created on Sat Oct  2 14:51:34 2021
 
-@author: erick
+@author: eers500
 """
 
 import glob
@@ -19,64 +18,28 @@ from scipy import ndimage
 from numba import vectorize, jit
 
 #%% Import Video correlate
-# VID = f.videoImport("E://PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
-# VID = f.videoImport("/home/erick/Documents/PhD/23_10_19/0-300_10x_100Hz_45um_frame_stack_every10um.avi", 0).astype('uint8')
-# VID = VID[:, :, :21]
 path_vid = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
 VID = f.videoImport(path_vid, 0)
 # MAX_VID = np.max(VID)
 # VID = np.uint8(255*(VID / MAX_VID))
-# VID = VID[:, :, :1000]
-# VID = VID[:, :, 0:-1:2]
+
 #%% Import LUT form images
-#LUT = [cv2.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
-# LUT = [mpimg.imread(file) for file in np.sort(glob.glob("E://PhD/23_10_19/LUT_MANUAL/*.png"))]
-# LUT = [mpimg.imread(file) for file in np.sort(glob.glob("/home/erick/Documents/PhD/23_10_19/LUT_MANUAL/*.png"))]
-# LUT = np.swapaxes(np.swapaxes(LUT, 0, 1), 1, 2)
 path_lut = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
 LUT = f.videoImport(path_lut, 0)
-# LUT = np.uint8(255*(LUT / MAX_VID))
-
-# LUT = VID[151-18:151+18, 162-18:162+18, :]  # Particle 1 for collodids
-# LUT = VID[77-18:77+18, 332-18:332+18, :]  # P2
-# LUT = VID[379-18:379+18, 130-18:130+18, :]  # P3
-#LUT = VID[369-18:369+18, 292-18:292+18, :]  # P4
-
-#%% Plot raw frames
-# plt.subplot(3, 2, 1); plt.imshow(VID[:, :, 0], cmap='gray')
-# plt.subplot(3, 2, 2); plt.imshow(LUT[:, :, 0], cmap='gray')
-
-# plt.subplot(3, 2, 3); plt.imshow(VID[:, :, 10], cmap='gray')
-# plt.subplot(3, 2, 4); plt.imshow(LUT[:, :, 10], cmap='gray')
-
-# plt.subplot(3, 2, 5); plt.imshow(VID[:, :, 20], cmap='gray')
-# plt.subplot(3, 2, 6); plt.imshow(LUT[:, :, 20], cmap='gray')
-
-# # Plot binary frames
-
-# plt.subplot(3, 2, 1); plt.imshow(VID_BINARY[:, :, 0], cmap='gray')
-# plt.subplot(3, 2, 2); plt.imshow(LUT_BINARY[:, :, 0], cmap='gray')
-
-# plt.subplot(3, 2, 3); plt.imshow(VID_BINARY[:, :, 10], cmap='gray')
-# plt.subplot(3, 2, 4); plt.imshow(LUT_BINARY[:, :, 10], cmap='gray')
-
-# plt.subplot(3, 2, 5); plt.imshow(VID_BINARY[:, :, 20], cmap='gray')
-# plt.subplot(3, 2, 6); plt.imshow(LUT_BINARY[:, :, 20], cmap='gray')
-
 
 #%% Prepare arrays
-LUT_BINARY = np.zeros(np.shape(LUT))
-VID_BINARY = np.zeros(np.shape(VID))
+VID_zn = np.empty_like(VID)
+for k in range(VID.shape[-1]):
+    A = VID[:,:,k]
+    VID_zn[:, :, k] = (A-np.mean(A))/np.std(A)
 
-LUT_BINARY[LUT >= np.mean(LUT)] = 255
-VID_BINARY[VID >= np.mean(VID)] = 255
+LUT_zn = np.empty_like(LUT)
+for k in range(LUT.shape[-1]):
+    A = LUT[:,:,k]
+    LUT_zn[:, :, k] = (A-np.mean(A))/np.std(A)
 
-#CORR = np.empty((np.shape(VID)[0], np.shape(VID)[1] , np.shape(VID)[2] * np.shape(LUT)[2]), dtype='float32')
-
-A = np.repeat(VID_BINARY.astype('uint8'), repeats=LUT.shape[-1], axis=-1).astype('float16')
-B = np.tile(LUT_BINARY, VID.shape[-1]).astype('float16')
-
-del VID, VID_BINARY, LUT, LUT_BINARY
+A = np.repeat(VID_zn, repeats=LUT_zn.shape[-1], axis=-1)
+B = np.tile(LUT_zn, VID_zn.shape[-1])
 
 #%% Correltion in GPU
 #@vectorize(["complex128(complex128, complex128)"], target='cuda')   #not good
@@ -93,7 +56,7 @@ BB = np.empty_like(A)
 for k in range(np.shape(B)[2]):
     # BB[:, :, k] = np.pad(B[:, :, k], int((1024-110)/2))
     BB[:, :, k] = np.pad(B[:, :, k], int((A.shape[0]-B.shape[0])/2))
-del B
+# del B
 FT = lambda x: np.fft.fftshift(np.fft.fft2(x))
 IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(X))
 
@@ -110,7 +73,7 @@ for k in range(np.shape(A)[2]):
     T.append((time.time()-T0)/60)
 print(T[-1])
 
-del A, BB
+# del A, BB
 # CC = np.reshape(C, (226*39000, 226))
 # np.savetxt('F:\PhD\Archea_LW\LUT_CES_30\GPU_corr_21.58min_226.txt', CC, fmt='%i', delimiter=',')
 
@@ -124,6 +87,7 @@ del A, BB
 # plt.colorbar()
 #%% Calculate correlation in CPU
 T0 = time.time()
+CORR = np.empty_like(A)
 for k in range(np.shape(A)[2]):
     print(k)
     CORR[:, :, k] = ndimage.filters.correlate(A[:, :, k], B[:, :, k], mode='wrap')

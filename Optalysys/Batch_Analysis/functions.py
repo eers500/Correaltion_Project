@@ -710,7 +710,7 @@ def surf(array):
     y = np.arange(array.shape[0])
     X, Y = np.meshgrid(x, y)
     
-    fig = plt.figure()
+    fig = plt.figure(figsize=(5,5))
     ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(Y, X, array, cmap='viridis')
     plt.show()
