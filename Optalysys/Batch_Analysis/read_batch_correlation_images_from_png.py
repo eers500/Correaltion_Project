@@ -34,8 +34,8 @@ if need_sort:
     file_list = natsorted(file_list)
 
 
-number_of_images = 275 #700 #430 # MAY 275 # Archea 400
-number_of_filters = 30 #20 #19   # MAY 30  # Archea 25
+number_of_images = 430 #700 #430 # MAY 275(550) # Archea 400     ### NEW Ar 400  Ec 430
+number_of_filters = 25 #20 #19   # MAY 30 (new 40)  # Archea 25  ### NEW Ar 24   Ec 22
 
 image_number = []
 filter_number = []
@@ -46,6 +46,9 @@ for k in tqdm(range(len(file_list))):
     # image_number.append(int(file_list[k][11:14]))
     filter_number.append(int(file_list[k][:2]))
     image_number.append(int(file_list[k][4:9]))
+    
+    # filter_number.append(int(file_list[k][:4]))
+    # image_number.append(int(file_list[k][7:11]))
 
 image_number = np.array(image_number)
 filter_number = np.array(filter_number)
@@ -73,8 +76,9 @@ file_list = flist
     # cam[:, :, number_of_images*k:number_of_images*k+number_of_images] = frames[:, :, i_images]
 
 #%%
-ni = 80 #796 #200 #786 # May 80     # Archea 60
-nj = 80 #1080 #225 #1064  # May 80  # Archea 60
+ni = 743 #796 #200 #786 # May 80     # Archea 60
+nj = 743  #1080 #225 #1064  # May 80  # Archea 60
+
 nk = number_of_images*number_of_filters
 
 C = np.empty((ni, nj, nk), dtype='float32')
@@ -86,12 +90,17 @@ for k in tqdm(range(len(file_list))):
     # temp = cv2.imread(path+file_list[k], 0)
     # temp = temp[364:424, 500:560]                       # For Archea
     # temp = temp[353:433, 490:570]                     # For June samples
-    temp = temp[354:434, 491:571]                       # For May samples
+    # temp = temp[164:590, 318:744]
+    # temp = temp[230:751,258:994] 
+    # temp = temp[0:757, 228:975]
+    # temp = temp[354:434, 491:571]                       # For May samples
+    temp = temp[8:8+ni, 232:232+nj]
     # temp2 = np.uint8(255 * temp / temp.max())
     C[:, :, k] = temp
     # print(k)
 T = time.time() - T0
-
+# CC = C
+C = np.float16(C)
 # cam = np.empty((ni, nj, nk))
 # filter_num = np.empty(nk, dtype='int')   
 # image_num = np.empty(nk, dtype='int')  
@@ -106,7 +115,7 @@ T = time.time() - T0
 #np.save('F:\\PhD\\E_coli\\June2021\\14\\sample_2\\'+'C.npy', C)
 # np.save('F:\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_09us_06\\'+'C.npy', C)
 # np.save('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\31_aug_21\\'+'CC_4x.npy', CC)
-
+# CC = C
 
 #%% Sobel + Gaussian filtering
 from scipy.ndimage import sobel, gaussian_filter
@@ -118,18 +127,18 @@ from scipy.ndimage import sobel, gaussian_filter
 # plt.subplot(1,2,1); plt.imshow(im)
 # plt.subplot(1,2,2); plt.imshow(filt)
 
-CC = np.empty_like(C)
-for k in tqdm(range(CC.shape[-1])):
-    CC[:, :, k] = gaussian_filter(np.abs(sobel(C[:, :, k])), 2)
+CCC = np.empty_like(CC)
+for k in tqdm(range(CCC.shape[-1])):
+    CCC[:, :, k] = gaussian_filter(np.abs(sobel(CC[:, :, k])), 2)
 
 #%%
 n = 0
 fig, ax = plt.subplots(1, 2, sharex=True, sharey=True)
-ax[0].imshow(C[:,:,n])
-ax[1].imshow(CC[:,:,n])
+ax[0].imshow(CC[:,:,n])
+ax[1].imshow(CCC[:,:,n])
 
-f.surf(C[:, :, n])
 f.surf(CC[:, :, n])
+f.surf(CCC[:, :, n])
 
 #%% Rollin ball filter
 # CC = np.empty_like(C)

@@ -18,10 +18,11 @@ type_of_correlation = 'GPU' # CPU, GPU or Optical
 
 #%% Import 2D track and load correaltion array
 
-magnification = 40
+magnification = 20
 fs = 0.711                  # px/um
-SZ = 40                     # step size of LUT [Archea: 10um,E. coli: 20, 40, 20]
-pnumber = 58                # Archea: 3, E.coli 35, 58, 4   MAY 0
+ps = (1/fs)/magnification
+SZ = 20                     # step size of LUT [Archea: 10um,E. coli: 20, 40, 20, MAY 20]
+pnumber = 0                # Archea: 3, E.coli 35, 58, 4   MAY 0
 path_track = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
 track_data = pd.read_csv(path_track)
 r0_track_df = track_data[track_data['TRACK_ID'] == pnumber]
@@ -34,108 +35,109 @@ r0_track = r0_track_df[['POSITION_Y', 'POSITION_X']].values
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\31_aug_21\\CC_4x.npy') # Sample 2 - particle 4
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-07\\'+'CC.npy') #particle 0
 
+# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\Archea_LW\\ZNCC\\GPU\\C_corr_zn.npy')
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\ZNCC\\GPU\\C_corr_zn.npy') # - particle 35
-CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_09us_06\\ZNCC\\GPU\\C_corr_zn.npy')   # - particle 58
+# CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_09us_06\\ZNCC\\GPU\\C_corr_zn.npy')   # - particle 58
 # CC = np.load('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_2\\ZNCC\\GPU\\C_corr_zn.npy')   # Ecoli Sample 2 - particle 4
 
 #%%
-def gauss(x, x0, y, y0, sigma, MAX):
-           # return 1/(np.sqrt(2*np.pi)*sigma) * np.exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))
-           return MAX * np.exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))
+# def gauss(x, x0, y, y0, sigma, MAX):
+#            # return 1/(np.sqrt(2*np.pi)*sigma) * np.exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))
+#            return MAX * np.exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))
 
-# def peak_gauss_fit_analysis(normalized_input, peak_number, peak_array, sel_size):
-def peak_gauss_fit_analysis(input2darray):
-    # k = peak_number  # Peak number
-    # sel_size = 15
-    # DATA = normalized_input[peak_array[k][0]-sel_size:peak_array[k][0]+sel_size, peak_array[k][1]-sel_size:peak_array[k][1]+sel_size]
+# # def peak_gauss_fit_analysis(normalized_input, peak_number, peak_array, sel_size):
+# def peak_gauss_fit_analysis(input2darray):
+#     # k = peak_number  # Peak number
+#     # sel_size = 15
+#     # DATA = normalized_input[peak_array[k][0]-sel_size:peak_array[k][0]+sel_size, peak_array[k][1]-sel_size:peak_array[k][1]+sel_size]
 
-    # sel_size = 10
+#     # sel_size = 10
     
-    si, sj = input2darray.shape
-    dr = 20  #20 50
-    sel_size = dr
-    rmid = [int(si/2), int(sj/2)]
+#     si, sj = input2darray.shape
+#     dr = 20  #20 50
+#     sel_size = dr
+#     rmid = [int(si/2), int(sj/2)]
     
-    # T0 = time.time()
-    temp_input = input2darray[int(si/2)-dr:int(si/2)+dr, int(sj/2)-dr:int(sj/2)+dr]
-    pkss = peak_local_max(temp_input, num_peaks=10, threshold_rel=0.8)   
-    pks = (rmid+pkss)-dr
+#     # T0 = time.time()
+#     temp_input = input2darray[int(si/2)-dr:int(si/2)+dr, int(sj/2)-dr:int(sj/2)+dr]
+#     pkss = peak_local_max(temp_input, num_peaks=10, threshold_rel=0.8)   
+#     pks = (rmid+pkss)-dr
     
-    if len(pks) == 0:
-        return 'Empty'
-    # print(time.time()-T0)
+#     if len(pks) == 0:
+#         return 'Empty'
+#     # print(time.time()-T0)
     
-    # T0 = time.time()
-    # pkss = peak_local_max(input2darray, num_peaks=10)
-    # print(time.time()-T0)
-    dist_to_rmid = np.sqrt(np.sum((pks-rmid)**2, axis=1))
-    # pks_near_rmid = pks[dist_to_rmid <= dr, :]
-    pks_near_rmid = pks[dist_to_rmid == dist_to_rmid.min(), :]
+#     # T0 = time.time()
+#     # pkss = peak_local_max(input2darray, num_peaks=10)
+#     # print(time.time()-T0)
+#     dist_to_rmid = np.sqrt(np.sum((pks-rmid)**2, axis=1))
+#     # pks_near_rmid = pks[dist_to_rmid <= dr, :]
+#     pks_near_rmid = pks[dist_to_rmid == dist_to_rmid.min(), :]
     
-    # plt.imshow(input2darray)
-    # plt.scatter(r1[:,1], r1[:,0], c='red')
-    # plt.scatter(pks[:,1], pks[:,0], c='yellow')
+#     # plt.imshow(input2darray)
+#     # plt.scatter(r1[:,1], r1[:,0], c='red')
+#     # plt.scatter(pks[:,1], pks[:,0], c='yellow')
     
-    if len(pks_near_rmid) == 0:
-        pks = np.array([np.array(rmid)])
-    else: 
+#     if len(pks_near_rmid) == 0:
+#         pks = np.array([np.array(rmid)])
+#     else: 
     
-        intensity_pks_near_rmid = np.empty(len(pks_near_rmid))
-        for i in range(len(pks_near_rmid)):
-            intensity_pks_near_rmid[i] = input2darray[pks_near_rmid[i][0], pks_near_rmid[i][1]]
+#         intensity_pks_near_rmid = np.empty(len(pks_near_rmid))
+#         for i in range(len(pks_near_rmid)):
+#             intensity_pks_near_rmid[i] = input2darray[pks_near_rmid[i][0], pks_near_rmid[i][1]]
     
-        pks = pks_near_rmid[intensity_pks_near_rmid == intensity_pks_near_rmid.max()]
-        # dist_to_pks = np.sqrt(np.sum((pks-rmid)**2, axis=1))
+#         pks = pks_near_rmid[intensity_pks_near_rmid == intensity_pks_near_rmid.max()]
+#         # dist_to_pks = np.sqrt(np.sum((pks-rmid)**2, axis=1))
     
-        if len(pks) > 1:
-            pks = np.array([pks[0]])
+#         if len(pks) > 1:
+#             pks = np.array([pks[0]])
     
 
-    INTENSITY = input2darray[pks[0][0], pks[0][1]]
-    DATA = input2darray[pks[0][0]-sel_size:pks[0][0]+sel_size+1, pks[0][1]-sel_size:pks[0][1]+sel_size+1]  # centered in pks
+#     INTENSITY = input2darray[pks[0][0], pks[0][1]]
+#     DATA = input2darray[pks[0][0]-sel_size:pks[0][0]+sel_size+1, pks[0][1]-sel_size:pks[0][1]+sel_size+1]  # centered in pks
     
-    if DATA.shape != (2*sel_size+1, 2*sel_size+1):
-        return 'Empty'
+#     if DATA.shape != (2*sel_size+1, 2*sel_size+1):
+#         return 'Empty'
 
-    else:  
+#     else:  
         
-        centeri, centerj = int(np.floor(DATA.shape[0]/2)), int(np.floor(DATA.shape[1]/2))
-        center_value = DATA[centeri, centerj]
-        I, J = np.meshgrid(np.arange(DATA.shape[0]), np.arange(DATA.shape[1]))
-        sig = np.linspace(0.1, 40, 200)
-        chisq = np.empty_like(sig)
+#         centeri, centerj = int(np.floor(DATA.shape[0]/2)), int(np.floor(DATA.shape[1]/2))
+#         center_value = DATA[centeri, centerj]
+#         I, J = np.meshgrid(np.arange(DATA.shape[0]), np.arange(DATA.shape[1]))
+#         sig = np.linspace(0.1, 40, 200)
+#         chisq = np.empty_like(sig)
         
-        for ii in range(len(sig)):
-            # chisq[ii] = np.sum((DATA - gauss(I, pks[0][0], J, pks[0][1], sig[ii], DATA.max()))**2)/np.var(DATA)
-            chisq[ii] = np.sum((DATA - gauss(I, centeri, J, centerj, sig[ii], center_value))**2)/np.var(DATA)
-            # for jj in range(len(MAX)):
-                # chisq[ii, jj] = np.sum((DATA - gauss(I, pks[0][0], J, pks[0][1], sig[ii], MAX[jj]))**2)/np.var(DATA)
+#         for ii in range(len(sig)):
+#             # chisq[ii] = np.sum((DATA - gauss(I, pks[0][0], J, pks[0][1], sig[ii], DATA.max()))**2)/np.var(DATA)
+#             chisq[ii] = np.sum((DATA - gauss(I, centeri, J, centerj, sig[ii], center_value))**2)/np.var(DATA)
+#             # for jj in range(len(MAX)):
+#                 # chisq[ii, jj] = np.sum((DATA - gauss(I, pks[0][0], J, pks[0][1], sig[ii], MAX[jj]))**2)/np.var(DATA)
                     
-        LOC_MIN = np.where(chisq == np.min(chisq))
-        SIGMA_OPT = sig[LOC_MIN[0][0]]
-        # MAX_OPT = MAX[LOC_MIN[1][0]]
-        fitted_gaussian = gauss(I, centeri, J, centerj, SIGMA_OPT, INTENSITY) #ZZ
-        OP = np.sum(DATA)
+#         LOC_MIN = np.where(chisq == np.min(chisq))
+#         SIGMA_OPT = sig[LOC_MIN[0][0]]
+#         # MAX_OPT = MAX[LOC_MIN[1][0]]
+#         fitted_gaussian = gauss(I, centeri, J, centerj, SIGMA_OPT, INTENSITY) #ZZ
+#         OP = np.sum(DATA)
         
-        # plt.figure(1)
-        # plt.plot(sig, chisq, '.-')
-        # plt.figure(2)
-        # plt.subplot(1, 2, 1); plt.imshow(DATA)
-        # plt.subplot(1, 2, 2); plt.imshow(fitted_gaussian)
+#         # plt.figure(1)
+#         # plt.plot(sig, chisq, '.-')
+#         # plt.figure(2)
+#         # plt.subplot(1, 2, 1); plt.imshow(DATA)
+#         # plt.subplot(1, 2, 2); plt.imshow(fitted_gaussian)
         
-        return INTENSITY, SIGMA_OPT, OP, fitted_gaussian, DATA
+#         return INTENSITY, SIGMA_OPT, OP, fitted_gaussian, DATA
 
 
 #%%
-number_of_images = 430   # Archea = 400 , Ecoli = 430, 430, 700  # MAY 275
-number_of_filters = 19  #Archea =  25 ,   Ecoli =  19,  19,  20  # MAY 30  
+number_of_images = 275   # Archea = 400 , Ecoli = 430, 430, 700  # MAY 275
+number_of_filters = 30  #Archea =  25 ,   Ecoli =  19,  19,  20  # MAY 30  
 N = CC.shape[-1]
 std_dev = np.nan*np.ones((number_of_images, number_of_filters))
 max_val = np.nan*np.ones_like(std_dev)
 fit = np.empty((number_of_images, number_of_filters), dtype='object')
 data = np.empty((number_of_images, number_of_filters), dtype='object')
 f_match = np.nan*np.ones(number_of_images)
-step = 3
+step = 1
 method = 'std_dev' # max or std_dev
 
 T = []
@@ -145,7 +147,7 @@ for i in tqdm(range(number_of_images)):
     if i==0:
         for j in range(number_of_filters):
             temp_corr = CC[:, :, i*number_of_filters+j]
-            vals = peak_gauss_fit_analysis(temp_corr)
+            vals = f.peak_gauss_fit_analysis(temp_corr)
             if vals == 'Empty':
                 std_dev[i, j] = np.nan
                 max_val[i, j] = np.nan
@@ -176,7 +178,7 @@ for i in tqdm(range(number_of_images)):
         
         for j in indices:
             temp_corr = CC[:, :, i*number_of_filters+j]
-            vals = peak_gauss_fit_analysis(temp_corr)
+            vals = f.peak_gauss_fit_analysis(temp_corr)
             if vals == 'Empty':
                 std_dev[i, j] = np.nan
                 max_val[i, j] = np.nan
@@ -200,34 +202,34 @@ for i in tqdm(range(number_of_images)):
 print(T[-1]/60)
 
 #%%
-# n = 0
-# m = 0
-# fig, ax = plt.subplots(1,2, sharex=True, sharey=True)
-# ax[0].imshow(data[n, m])
-# ax[1].imshow(fit[n, m])
-# f.surf(data[n, m])
-# f.surf(fit[n, m])
+n = 0
+m = 0
+fig, ax = plt.subplots(1,2, sharex=True, sharey=True)
+ax[0].imshow(data[n, m])
+ax[1].imshow(fit[n, m])
+f.surf(data[n, m])
+f.surf(fit[n, m])
 
-# #%%
-# fig, ax = plt.subplots(4, 4)
-# fig1, ax1 = plt.subplots(4, 4)
-# frame = 0
-# p=3
+#%%
+fig, ax = plt.subplots(4, 4)
+fig1, ax1 = plt.subplots(4, 4)
+frame = 0
+p=1
 
-# for i in range(4):
-#     for j in range(4):
-#         ax[i, j].imshow(data[frame, i*p+j])
-#         ax[i, j].axis('off')
+for i in range(4):
+    for j in range(4):
+        ax[i, j].imshow(data[frame, i*p+j])
+        ax[i, j].axis('off')
         
-#         ax1[i, j].imshow(fit[frame, i*p+j])
-#         ax1[i, j].axis('off')
-# plt.show()
+        ax1[i, j].imshow(fit[frame, i*p+j])
+        ax1[i, j].axis('off')
+plt.show()
 
 #%% Filter filter_match selection to avoid suddent jumps
 from scipy import ndimage
 
-coord_i = r0_track[:, 0]*(1/fs)/magnification
-coord_j = r0_track[:, 1]*(1/fs)/magnification
+coord_i = r0_track[:, 0]*ps
+coord_j = r0_track[:, 1]*ps
 
 zz = np.arange(number_of_filters-1, -1, -1)*SZ
     
@@ -276,10 +278,10 @@ import functions as f
 
 # L = np.stack((coord_j, coord_i, filter_match), axis=1)
 # L = np.stack((coord_jj, coord_ii, filtered), axis=1)
-L = np.stack((coord_jj, coord_ii, coord_kk), axis=1)
-LL = pd.DataFrame(L, columns=['X', 'Y', 'Z'])
+L = np.stack((coord_jj, coord_ii, coord_kk, frame), axis=1)
+LL = pd.DataFrame(L, columns=['X', 'Y', 'Z', 'T'])
 
-[x_smooth, y_smooth, z_smooth] = f.csaps_smoothing(LL, 1-1E-6, False)
+[x_smooth, y_smooth, z_smooth, t_smooth] = f.csaps_smoothing(LL, 1-1E-7, False)
 
 #% 3D Scatter Plot
 from mpl_toolkits.mplot3d import Axes3D

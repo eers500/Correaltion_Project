@@ -19,8 +19,14 @@ def MSD(x, y, z, dt):
         # msd[i] = np.mean((x[i:] - x[:-i])**2)
         
     s = dt*np.arange(len(msd))
+    #%%
+    ff = lambda x, c : c[0]*x + c[1] 
+    coefs = np.polyfit(s[:100], msd[:100], 1)
+    D = coefs[0]                                # Diffusion coefficient
+    # fit = ff(s[:100], coefs)
     
-    return msd, s
+    
+    return msd, s, D
 
 def main():
 
@@ -129,7 +135,7 @@ def main():
     # if __name__ == '__main__':
     #     app.run_server(debug=True)
             
-    return 0
+    # return 0
 
 if __name__ == "__main__":
     main()

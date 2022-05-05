@@ -36,8 +36,8 @@ number_of_images = int(number_of_images)
 number_of_filters = int(number_of_filters)
 
 #%% Read MAT files
-# CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
-# _, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
+CAMERA_PHOTO = scipy.io.loadmat(PATHS[0])
+_, _, _, CAMERA_PHOTO = CAMERA_PHOTO.values()
 
 INPUT_IMAGE_NUMBER = scipy.io.loadmat(PATHS[2])
 _, _, _, INPUT_IMAGE_NUMBER = INPUT_IMAGE_NUMBER.values() 

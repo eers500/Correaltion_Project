@@ -10,45 +10,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 import easygui as gui
 from tqdm import tqdm
+from functions import create_filter
+from natsort import natsorted
 
 path = gui.diropenbox()
 write_path = gui.diropenbox()
 file_list = os.listdir(path)
 
-def create_filter(img, shape):
-    # Padding
-    SI = shape
-    S = img.shape
-    PAD = np.copy(img)
-    PAD= np.pad(PAD, (int(np.floor(SI[0]/2)-np.floor(S[0]/2)), int(np.floor(SI[1]/2)-np.floor(S[1]/2))))
-    
-    # Phase
-    FT = lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
-    IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
-    
-    phase_sel = np.exp(1j**np.pi*PAD/255)
-    filts = FT(phase_sel)
-    f = -255*np.angle(filts)
-    ff = np.zeros_like(f)
-    ff[f >= 0] = 255
-    
-    # f = f-f.min()
-    # ff = 255 * f/f.max()
-    filt = np.uint8(ff)
-    
-    return filt
-
+#%
+file_list = natsorted(file_list)
+#%%
 shape = [1000, 1000]
+img = []
 filters = []
-for file in tqdm(file_list):
-    img = plt.imread(path+'\\'+file)
-    # filters.append(create_filter(img[:, :, 0], shape))
-    filters.append(create_filter(img, shape))
-    
+filters_8bit = []
+
+for i, file in enumerate(tqdm(file_list)):
+    im = plt.imread(path+'\\'+file)
+    img.append(im[:, :, 0])
+    # img.append(im)
+    t = create_filter(img[i], shape)
+    filters.append(t[0])
+    filters_8bit.append(np.int16(t[1]))
+
+#%%
+binary = True
 for i in tqdm(np.arange(len(filters))):
-    plt.imsave(write_path+'\\'+str(i)+'.png', filters[i], cmap='gray')
+    if binary:
+        plt.imsave(write_path+'\\'+str(i)+'.png', filters[i], cmap='gray')
+    else:
+        plt.imsave(write_path+'\\'+str(i)+'.png', filters_8bit[i], cmap='gray')
     
-    
+#%%
+
+
 #%% Test correlation
 FT = lambda x: np.fft.ifftshift(np.fft.fft2(np.fft.fftshift(x)))
 IFT = lambda X: np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(X)))
@@ -110,3 +105,28 @@ from scipy import ndimage
 CCC = ndimage.filters.correlate(img, img)
 plt.figure(2)
 plt.imshow(CCC, cmap='jet')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -110,7 +110,7 @@ for k in range(np.shape(A)[2]):
     T.append((time.time()-T0)/60)
 print(T[-1])
 
-del A, BB
+# del A, BB
 # CC = np.reshape(C, (226*39000, 226))
 # np.savetxt('F:\PhD\Archea_LW\LUT_CES_30\GPU_corr_21.58min_226.txt', CC, fmt='%i', delimiter=',')
 
