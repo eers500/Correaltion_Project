@@ -11,7 +11,6 @@ import matplotlib as mpl
 # mpl.rc('figure',  figsize=(5, 5))
 import matplotlib.pyplot as plt
 import scipy.io
-
 import pandas as pd
 import functions as f
 import easygui as gui
@@ -80,8 +79,8 @@ print(T_CORR[-1])
 # np.save('C:\\Users\\eers500\\Documents\\PhD\\Archea_LW\\NEW ANALYSIS\\CC_f16_LUT_every2VIDEO.npy', CC)
 
 #%% Video settings
-magnification = 20          # Archea: 20, E. coli: 40, 40, 40, MAY 20 (new 20), Colloids 20
-frame_rate = 6              # Archea: 30/5, E. coli: 60, 60, 60, MAY 100, Colloids 50
+magnification = 40          # Archea: 20, E. coli: 40, 40, 40, MAY 20 (new 20), Colloids 20
+frame_rate = 60              # Archea: 30/5, E. coli: 60, 60, 60, MAY 100, Colloids 50
 fs = 0.711*(magnification/10)                  # px/um
 ps = (1 / fs)                    # Pixel size in image /um
 SZ = 5                     # step size of LUT [Archea: 10um,E. coli: 20, 40, 20, MAY 20 (new 10)], Colloids: 10
@@ -96,7 +95,7 @@ import os
 from scipy.ndimage import sobel, gaussian_filter
 
 path = gui.diropenbox()
-path = path + '\\'
+path = path + '/'
 
 file_list = os.listdir(path)
 
@@ -105,8 +104,8 @@ if need_sort:
     file_list = natsorted(file_list)
 
 
-# number_of_images = 430 #700 #430 # MAY 275(550) # Archea 400     ### NEW Ar 400  Ec 430
-# number_of_filters = 25 #20 #19   # MAY 30 (new 40)  # Archea 25  ### NEW Ar 24   Ec 22
+number_of_images = 430 #700 #430 # MAY 275(550) # Archea 400     ### NEW Ar 400  Ec 430
+number_of_filters = 25 #20 #19   # MAY 30 (new 40)  # Archea 25  ### NEW Ar 24   Ec 22
 
 image_number = []
 filter_number = []
@@ -143,14 +142,17 @@ w = 1                                               # Windos for quadratic fit i
 pol = lambda a, x: a[0]*x**2 + a[1]*x + a[2]
 pos = []
 
-nii = 318#412 #743
-njj = 316#412 #743
+# nii = 318#412 #743
+# njj = 316#412 #743
+tt = plt.imread(path+file_list[0])
+nii, njj = tt.shape
+
 num_images = nk*mk
 
 methods = ['GPU', 'Optical']
 method = methods[1]
 
-apply_filters = True  # Just for Optical
+apply_filters = False  # Just for Optical
 
 for k in tqdm(range(nk)):
 # for k in range(2):
@@ -166,7 +168,8 @@ for k in tqdm(range(nk)):
             # plt.imsave(pp+file_list[id][:-3]+'png', t[168:168+nii, 401:401+njj].astype('uint8'), cmap='gray')
             # temp[:, :, i] = t[8:8+nii, 232:232+njj]
             # temp[:, :, i] = t[168:168+nii, 401:401+njj]    # Ecoli may 05
-            temp[:, :, i] = t[:, :, 0]
+            # temp[:, :, i] = t[:, :, 0]
+            temp[:, :, i] = t
             
             if apply_filters:
                 temp[:, :, i] = gaussian_filter(np.abs(sobel(temp[:, :, i])), 4)
@@ -174,7 +177,7 @@ for k in tqdm(range(nk)):
         zp = np.max(temp, axis=2)
         zp_gauss = gaussian_filter(zp.astype('float32'), sigma=3)
         # r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.5, min_distance=50, num_peaks=1)
-        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.8, min_distance=30)
+        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.6, min_distance=20)
         
         # plt.imshow(zp_gauss, cmap='gray')
         # plt.scatter(r[:, 1], r[:, 0])
@@ -186,7 +189,7 @@ for k in tqdm(range(nk)):
         # zp_gauss = zp
         
         # r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.2, min_distance=2, num_peaks=1)
-        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.2, min_distance=30)
+        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.5, min_distance=20)
         # print(r)
         # print('-')
         # print(r*ps)
@@ -240,8 +243,7 @@ posk = np.empty_like(locs[:, 2])
 for k in range(len(posk)):
     # posk[k] = zz[int(locs[k, 2])]
     posk[k] = true_z_of_target_im_1 - locs[k, 2]*SZ
-    
-    
+       
 data_3d = pd.DataFrame(np.transpose([posj, posi, posk, post, posframe]), columns=['X', 'Y', 'Z', 'TIME', 'FRAME'])
 
 
