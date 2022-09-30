@@ -1028,35 +1028,39 @@ def clean_tracks(LL):
     return [xx, yy, zz, tt, ff, pp]
     
 #%% MSD
-def MSD(x, y, z):
+def MSD(x, y, z, t):
+       
     import numpy as np
     from scipy.optimize import curve_fit
-    
-    ntaus = np.floor(len(x)/2)
+
+    # particle_num = np.unique(LINKED['PARTICLE'])
+    # print(particle_num)
+
+    # df = smoothed_curves_df[smoothed_curves_df['PARTICLE'] == particle_num[8]]
+
+    # x, y, z, t = df.X.values, df.Y.values, df.Z.values, df.TIME.values
+
+    # ntaus = np.floor(len(x)/4)
+    ntaus = 100
     taus = np.arange(1, ntaus, dtype='uint64')
     MSD = []
     size = []
-    for tau in taus:
-        tau = int(tau)
-        length = int(len(x)-tau)
-        diff = np.empty(length)
-        for i in range(length):
-            diff[i] = (x[i]-x[i+tau])**2 + (y[i]-y[i+tau])**2 + (z[i]-z[i+tau])**2
-        
-        size.append(len(diff))
-        MSD.append(np.mean(diff))
+    tstep = t[1]-t[0]
+
+    for i in range(1, len(taus)+1):
+        MSD.append(np.average((x[i:] - x[:-i])**2 + (y[i:] - y[:-i])**2 + (z[i:] - z[:-i])**2))
 
     def line(x, m, b):
         return m*x + b
 
-    # def fun(t, v, D):
-    #     return t**2*v**2 + 4*D*t 
+    params, cov = curve_fit(line, tstep*taus, MSD)
+    # print(params)
 
-    n = int(len(taus)/4)
-    # n = len(taus)
-    
-    params, cov = curve_fit(line, taus[:n], MSD[:n], p0=(1, 0))
-    # params, cov = curve_fit(fun, taus[:n], MSD[:n])
+    # plt.plot(taus*tstep, MSD, '-', label='MSD')
+    # # plt.plot(taus*tstep, line(taus*tstep, params[0], params[1]), '--', label='FIT: m = '+str(round(params[0], 2)))
+    # plt.plot(taus*tstep, line(taus*tstep, 1.5, params[1]))
+    # plt.legend()
+    # plt.show()
     
     if params[0] > 1.5:
         swim = True
@@ -1149,10 +1153,122 @@ def clean_tracks_search_sphere(track, rsphere):
         return [x_new, y_new, z_new, t_new, fr_new, p_new]
         
 
+#%%
+def search_sphere_clean(DF, rsphere, frame_skip, min_size):
+    import numpy as np
+    import pandas as pd
+    from tqdm import tqdm
+    from functions import contiguous_repeats
+    
+    # rsphere = 15
+    # frame_skip = 10
+    # min_size = 200
+    
+    dd = DF
+    dd = dd.reset_index(drop=True)
+    frames = np.unique(dd['FRAME'])
+    particle = dd['PARTICLE'][0]
+    # num_particles = len(dd[dd['FRAME'] == 0])
+    num_particles = contiguous_repeats(dd['FRAME'].values).max()  # Asume that repeated values mean new particle
+    num_particles = int(num_particles)
+    frame_skip_counter = 0
+    
+    if num_particles == 1:
+        return dd
+    
+    else:
+        tracks = []
+        for n in range(num_particles):
+    
+            idtrack = []    
+            for i in range(len(dd)):
+                
+                if i==0:
+                    x0, y0, z0, fr0, t0 = dd['X'][i], dd['Y'][i], dd['Z'][i], dd['FRAME'][i], dd['TIME'][i]
+                    track = [(x0, y0, z0, fr0, t0, particle+0.1*(n+1))]
+                    idtrack.append(i)
+                    
+                    
+                else:
+                    x, y, z, fr, t = dd['X'][i], dd['Y'][i], dd['Z'][i], dd['FRAME'][i], dd['TIME'][i]
+                    dist = np.sqrt((x-x0)**2+(y-y0)**2+(z-z0)**2)
+                    
+                    if dist < rsphere and abs(t-t0)>0:
+                        track.append((x, y, z, fr, t, particle+0.1*(n+1)))
+                        idtrack.append(i)
+                        x0, y0, z0, fr0, t0 = x, y, z, fr, t
+                        frame_skip_counter = 0
+                    else:
+                        frame_skip_counter += 1
+                        if frame_skip_counter > frame_skip:
+                            break
+            if len(track) >= min_size:
+                t = pd.DataFrame(np.array(track), columns=['X', 'Y', 'Z', 'FRAME', 'TIME', 'PARTICLE'])
+                tracks.append(t)
+                
+            dd = dd.drop(idtrack)
+            dd = dd.reset_index(drop=True)
+           
+            if len(dd)<min_size:
+                break
+            
+        return pd.concat(tracks) if len(tracks) > 0 else []
 
 
+#%% Search Sphere tracking
+def search_sphere_tracking(DF, rsphere, frame_skip, min_size):
+    import numpy as np
+    import pandas as pd
+    from tqdm import tqdm
+    from functions import contiguous_repeats
+    from time import time
+    
+    # rsphere = 15
+    # frame_skip = 10
+    # min_size = 200
 
+    dd = DF[DF['FRAME'] == 0]
+    frames = np.unique(DF['FRAME'])
 
+    dd = DF
+    dd = dd.reset_index(drop=True)
+    frames = np.unique(dd['FRAME'])
+    num_particles = len(dd[dd['FRAME'] == 0])
+    num_particles = int(num_particles)
+
+    tracks = []
+    for n in tqdm(range(num_particles)):
+
+        # n = 70
+        x0, y0, z0, t0, fr0 = dd['X'][n], dd['Y'][n], dd['Z'][n], dd['TIME'][n], dd['FRAME'][n]
+        
+        track = [(x0, y0, z0, t0, fr0, n)]
+        frame_skip_counter = 0
+        
+        for k in range(1, len(frames)):
+            s = DF[DF['FRAME'] == k]
+            x, y, z, tt, fr = s['X'].values, s['Y'].values, s['Z'].values, s['TIME'].values, s['FRAME'].values
+            
+            dist = np.sqrt((x-x0)**2+(y-y0)**2+(z-z0)**2)
+            
+            if (dist<rsphere).any():
+                id_min = np.where(dist == dist.min())[0][0]
+                track.append((x[id_min], y[id_min], z[id_min], tt[id_min], fr[id_min], n))
+                x0, y0, z0 = x[id_min], y[id_min], z[id_min]
+                frame_skip_counter = 0
+            else:
+                frame_skip_counter += 1
+                if frame_skip_counter > frame_skip:
+                    break
+        
+        if len(track) > min_size:
+            track = pd.DataFrame(np.array(track), columns=['X', 'Y', 'Z', 'TIME', 'FRAME', 'PARTICLE'])
+            tracks.append(track)
+            
+
+    tt = pd.concat(tracks)  
+    
+    return tt
 
 
 

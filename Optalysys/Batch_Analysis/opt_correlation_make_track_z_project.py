@@ -23,6 +23,7 @@ from numba import vectorize, jit
 #%% Import Video correlate
 path_vid = gui.fileopenbox(default='/media/erick/NuevoVol/LINUX_LAP/PhD/GT_200821/Cell_1/10um_150steps/1500 _Ecoli_HCB1_10x_50Hz_0.050ms_642nm_frame_stack_150steps_10um/')
 VID = f.videoImport(path_vid, 0)
+# VID = VID[:226, 300-226:,:]
 ni, nj, nk = np.shape(VID)
 
 invert = False
@@ -52,23 +53,33 @@ for k in range(mk):
     A = LUT[:,:,k]
     LUT_zn[:, :, k] = (A-np.mean(A))/np.std(A)
 
+
+#%%
+# ni, nj, nk = 700, 700, 700
+# mi, mj, mk = 170, 170, 20
+
+
+# VID_zn = np.random.random_integers(0, 255, (ni, nj, nk)).astype('float32')
+# LUT_zn = np.random.random_integers(0, 255, (mi, mj, mk)).astype('float32')
+
 #%% CuPy correlation
 def corr_gpu(a, b):
     return a*cp.conj
 
 cFT = lambda x: cp.fft.fftshift(cp.fft.fft2(x))
 cIFT = lambda X: cp.fft.ifftshift(cp.fft.ifft2(X))
-
+# cc = []
 CC = np.empty((ni, nj, nk*mk), dtype='float16')
 T0 = time.time()
 T_CORR = []
-for i in tqdm(range(nk)):
-# for i in range(10):
+# for i in tqdm(range(nk)):
+for i in range(25):
     im = VID_zn[:, :, i]
     imft = cFT(cp.array(im))
     for j in range(mk):
         fm = cp.pad(cp.array(LUT_zn[:, :, j]), int((ni-mi)/2))
         fmft = cFT(fm)
+        # cc.append(cp.abs(cIFT(imft*cp.conj(fmft))).get().astype('float16'))
         # CC[:, :, i*mk+j] = np.abs(cIFT(corr_gpu(imft, fmft)))
         CC[:, :, i*mk+j] = cp.abs(cIFT(imft*cp.conj(fmft))).get().astype('float16')
         T_CORR.append((time.time()-T0)/60)
@@ -77,6 +88,22 @@ print(T_CORR[-1])
 # CC = np.float16(CC)
 # np.save('C:\\Users\\eers500\\Documents\\PhD\\E_coli\\June2021\\14\\sample_1\\40x_HCB1_60Hz_1.259us_03\\NEW ANALYSIS\\CC_f16_binaryLUT.npy', CC)
 # np.save('C:\\Users\\eers500\\Documents\\PhD\\Archea_LW\\NEW ANALYSIS\\CC_f16_LUT_every2VIDEO.npy', CC)
+
+#%% Export images for theis
+cc = CC[:,:,:25]
+cc_p = np.max(cc, axis=2)
+
+plt.imsave('z_project.png', cc_p)
+
+plt.gca().set_axis_off()
+# plt.imshow(cc_p, cmap='gray')
+# plt.savefig('z_project_corr.png', dpi=300, bbox='tight')
+
+# for i in range(25):
+#     plt.gca().set_axis_off()
+#     # plt.imshow(cc[:,:,i], cmap='gray')
+#     plt.imsave('corr_'+str(i)+'.png', cc[:,:,i])
+
 
 #%% Video settings
 magnification = 40          # Archea: 20, E. coli: 40, 40, 40, MAY 20 (new 20), Colloids 20
@@ -134,6 +161,17 @@ for k in range(number):
     inum[k*number_of_filters:k*number_of_filters+number_of_filters] = image_number[k_image_index]
     
 file_list = flist
+
+#%%
+import cv2
+# tt = cv2.imread(path+file_list[0])
+# tt = tt[:,:,0]
+# nii, njj = tt.shape
+
+CC = [cv2.imread(path+file, 0) for file in tqdm(file_list)]
+
+
+
 #%% Analysis with MAx value (good results)
 # CC = np.load(gui.fileopenbox())
 
@@ -142,17 +180,14 @@ w = 1                                               # Windos for quadratic fit i
 pol = lambda a, x: a[0]*x**2 + a[1]*x + a[2]
 pos = []
 
-# nii = 318#412 #743
-# njj = 316#412 #743
-tt = plt.imread(path+file_list[0])
-nii, njj = tt.shape
+nii, njj = CC[0].shape
 
 num_images = nk*mk
 
 methods = ['GPU', 'Optical']
 method = methods[1]
 
-apply_filters = False  # Just for Optical
+apply_filters = True  # Just for Optical
 
 for k in tqdm(range(nk)):
 # for k in range(2):
@@ -163,21 +198,24 @@ for k in tqdm(range(nk)):
         
         for i, id in enumerate(ids):
             # print(file_list[id])
-            t = plt.imread(path+file_list[id])       
-            # pp = 'C:\\Users\\eers500\\Documents\\PhD\\E_coli\\may2021\\5\\20x_100Hz_05us_EcoliHCB1-05\\RESULTS\\BINARY_100_cropped\\'
-            # plt.imsave(pp+file_list[id][:-3]+'png', t[168:168+nii, 401:401+njj].astype('uint8'), cmap='gray')
-            # temp[:, :, i] = t[8:8+nii, 232:232+njj]
-            # temp[:, :, i] = t[168:168+nii, 401:401+njj]    # Ecoli may 05
-            # temp[:, :, i] = t[:, :, 0]
-            temp[:, :, i] = t
+            
+            # t = cv2.imread(path+file_list[id], 0)
+            # t = plt.imread(path+file_list[id])
+            # t = t[:,:,0]
+            # temp[:, :, i] = t
+            
+            temp[:, :, i] = CC[id]
             
             if apply_filters:
-                temp[:, :, i] = gaussian_filter(np.abs(sobel(temp[:, :, i])), 4)
+                temp[:, :, i] = gaussian_filter(np.abs(sobel(temp[:, :, i])), 1)
          
         zp = np.max(temp, axis=2)
         zp_gauss = gaussian_filter(zp.astype('float32'), sigma=3)
+        # zp_gauss = zp
+        
+        
         # r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.5, min_distance=50, num_peaks=1)
-        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.6, min_distance=20)
+        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.8, min_distance=15)
         
         # plt.imshow(zp_gauss, cmap='gray')
         # plt.scatter(r[:, 1], r[:, 0])
@@ -189,7 +227,7 @@ for k in tqdm(range(nk)):
         # zp_gauss = zp
         
         # r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.2, min_distance=2, num_peaks=1)
-        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.5, min_distance=20)
+        r = peak_local_max(zp_gauss.astype('float32'), threshold_rel=0.3, min_distance=20)
         # print(r)
         # print('-')
         # print(r*ps)
@@ -231,12 +269,12 @@ for k in tqdm(range(nk)):
 locs = np.array(pos)
 
 #% Positions 3D Data Frame
-posi = locs[:, 1]*ps
-posj = locs[:, 0]*ps
+posi = locs[:, 0]*ps
+posj = locs[:, 1]*ps
 post = locs[:, 3]/frame_rate
 posframe = locs[:, 3]
 
-true_z_of_target_im_1 = 119.4373 # 96.1       #um
+true_z_of_target_im_1 = 121.1 # 96.1       #um
 # zz = np.arange(number_of_filters-1, -1, -1)*SZ
 zz = np.linspace(true_z_of_target_im_1, SZ, mk)
 posk = np.empty_like(locs[:, 2])
@@ -244,7 +282,15 @@ for k in range(len(posk)):
     # posk[k] = zz[int(locs[k, 2])]
     posk[k] = true_z_of_target_im_1 - locs[k, 2]*SZ
        
-data_3d = pd.DataFrame(np.transpose([posj, posi, posk, post, posframe]), columns=['X', 'Y', 'Z', 'TIME', 'FRAME'])
+data_3d = pd.DataFrame(np.transpose([posi.round(2), posj.round(2), posk.round(2), post.round(3), posframe]), columns=['X', 'Y', 'Z', 'TIME', 'FRAME'])
+
+
+#%%
+export = False
+
+filename  = path_vid[:-4]+'_sig02_TH075_PMD20_OPT.csv'
+if export:
+    data_3d.to_csv(filename, index=False)
 
 
 #%% Analysis with Gaussian Fitting (not good results)
@@ -355,14 +401,14 @@ frames = np.unique(data_3d['FRAME'])
 for i in range(len(frames)):
 # for i in range(1000):
     data = data_3d[data_3d['FRAME'] == i]
-    plt.plot(data['X'], -data['Y'], '.')
+    plt.plot(data['Y'], -data['X'], '.')
 
 #%% DBSCAN
 import os
 import sklearn.cluster as cl
 
 cores = os.cpu_count()
-eps = 5
+eps = 20
 min_samples = 20
 
 # time.sleep(10)
@@ -415,10 +461,10 @@ for p in particle_num:
             L = pd.DataFrame.transpose(pd.DataFrame(temp, ['X', 'Y', 'Z', 'TIME', 'FRAME','PARTICLE']))
             # L = L.drop_duplicates(subset='TIME', keep='last')
        
-            fig = plt.figure(1)
-            ax1 = fig.add_subplot(111, projection='3d') 
-            ax1.scatter(L['Y'], L['X'], L['Z'], c=L['TIME'])
-            pyplot.show()
+            # fig = plt.figure(1)
+            # ax1 = fig.add_subplot(111, projection='3d') 
+            # ax1.scatter(L['Y'], L['X'], L['Z'], c=L['TIME'])
+            # pyplot.show()
            
        
         _, swim = f.MSD(L.X.values, L.Y.values, L.Z.values)
@@ -501,7 +547,7 @@ for pn in particle_num:
     
     if len(L) < 100:
         continue
-    X = f.csaps_smoothing(L, smoothing_condition=0.995, filter_data=True, limit=15)
+    X = f.csaps_smoothing(L, smoothing_condition=0.995, filter_data=False, limit=15)
     
     if X != -1:
         X.append(pn*np.ones_like(X[1]))
@@ -544,7 +590,7 @@ ax = fig.add_subplot(111, projection='3d')
 for pn in particle_num:
     # s = smoothed_curves_df[smoothed_curves_df['PARTICLE'] == pn]
     s = tracks_w_speed[tracks_w_speed['PARTICLE'] == pn]
-    ax.plot(s['X'], s['Y'], -s['Z'], linewidth=2)
+    ax.plot(s['X'], s['Y'], s['Z'], linewidth=2)
     # ax.scatter(s['Y'], s['X'], s['Z'], c=s['SPEED'])
     
 ax.axis('tight')

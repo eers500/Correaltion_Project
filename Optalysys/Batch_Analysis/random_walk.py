@@ -54,7 +54,7 @@ def MSD(x, y, z, dt):
 N = 5000 # the number of discrete steps
 T = 1 # the number of continuous time steps
 dt = 1.0 * T/N  # total number of time steps
-D = 0.5         # Diffuscion coefficient
+D = 0.5        # Diffuscion coefficient
 h = 1 # the variance of the increments
 
 

@@ -19,7 +19,7 @@ def MSD(x, y, z, dt):
         # msd[i] = np.mean((x[i:] - x[:-i])**2)
         
     s = dt*np.arange(len(msd))
-    #%%
+    #%
     ff = lambda x, c : c[0]*x + c[1] 
     coefs = np.polyfit(s[:100], msd[:100], 1)
     D = coefs[0]                                # Diffusion coefficient
@@ -71,7 +71,7 @@ def main():
             z[i] = z[i - 1] - step
     
     dt = 0.5    
-    MS_DISP, S = MSD(x, y, z, dt)
+    msd, S, D = MSD(x, y, z, dt)
     
     fig = plt.figure()
     
@@ -85,7 +85,7 @@ def main():
     
     n_points = 100
     ax = fig.add_subplot(1, 2, 2)
-    ax.plot(S[:n_points], MS_DISP[:n_points], '.-')
+    ax.plot(S[:n_points], msd[:n_points], '.-')
     ax.set_xlabel('t'); ax.set_ylabel('MSD')
     ax.set_title('Mean Square Displacement: '+np.str(n_points)+' points')
     ax.grid()
